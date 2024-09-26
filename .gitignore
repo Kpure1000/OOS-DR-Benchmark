@@ -1,0 +1,8 @@
+datasets/
+org_datasets/
+results/
+imgs/
+logs/
+__pycache__/
+.vscode/
+.DS_Store

@@ -1,0 +1,30 @@
+knn:
+  pumap: 15
+  cdr: 15
+  dlmp-umap: 15
+  mi-mds: 15
+  lisomap: 15
+  kisomap: 15
+  oos-isomap: 15
+perplexities:
+  ptsne: 30
+  ptsne_new: 30
+  ptsne22: 30
+  dlmp-tsne: 30
+  ktsne: 30
+epochs:
+  ptsne: 1000
+  ptsne_new: 300
+  ptsne22: 1000
+  autoencoder: 1000
+  cdr: 1000
+  dlmp-tsne: 1000
+  dlmp-umap: 1000
+  mi-mds: 1000
+lr:
+  ptsne: 0.001
+  ptsne_new: 0.01
+  autoencoder: 0.001
+  cdr: 0.001
+  dlmp-tsne: 0.001
+  dlmp-umap: 0.001
