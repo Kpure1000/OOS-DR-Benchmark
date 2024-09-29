@@ -56,16 +56,16 @@ if __name__ == '__main__':
 
     # 指标
     metrics_name = [
-        't',
-        'c',
-        'ns',
-        'shp',
-        'sil',
-        'dsc',
-        'nh',
-        'ale',
-        'acc_test',
-        'acc_train',
+        # 't',
+        # 'c',
+        # 'nh',
+        'lc',
+        'tp',
+        # 'sd',
+        # 'sc',
+        # 'dsc',
+        # 'acc_oos',
+        # 'acc_e',
     ]
     n_metrics = len(metrics_name)
 
@@ -94,11 +94,9 @@ if __name__ == '__main__':
                     y_train = data['y_train']
                     y_test = data['y_test']
 
-                    logger.debug(f"Load train projection for '{method_name}-{dataset_name}-{oos_stage_idx}' at '{train_proj_saved_path}'")
                     train_proj_saved_path = f'results/truth/{bench_fold}/projections/{dataset_name}_{method_name}_{oos_stage_idx}_train.csv'
                     proj_train = load_projection(train_proj_saved_path)
 
-                    logger.debug(f"Load test projection for '{method_name}-{dataset_name}-{oos_stage_idx}' at '{test_proj_saved_path}'")
                     test_proj_saved_path = f'results/truth/{bench_fold}/projections/{dataset_name}_{method_name}_{oos_stage_idx}_test.csv'
                     proj_test = load_projection(test_proj_saved_path)
 

@@ -56,14 +56,14 @@ if __name__ == '__main__':
     metrics_name = [
         't',
         'c',
-        'ns',
-        'shp',
-        'sil',
-        'dsc',
         'nh',
-        'ale',
-        'acc_test',
-        'acc_train',
+        'lc',
+        'tp',
+        'sd',
+        'sc',
+        'dsc',
+        'acc_oos',
+        'acc_e',
     ]
     n_metrics = len(metrics_name)
 
