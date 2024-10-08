@@ -14,7 +14,7 @@ from .parametric_dr import TSNE_NN
 from .cdr import CDRModelHandler
 
 from .autoencoder import AutoEncoder
-from ivis import Ivis
+
 from .dlmp import train_model
 
 from .oos_mds import oos_MDS
@@ -258,22 +258,6 @@ class _cdr:
     def transform_oos(self, X:np.ndarray):
         return self.transform(X)
 
-class _ivis:
-    def __init__(self, params: Parameters, verbose=False) -> None:
-        self.verbose = verbose
-
-    def fit(self, X:np.ndarray):
-        self.m = Ivis(embedding_dims=2, epochs=1000, verbose=self.verbose, batch_size=int(X.shape[0] / 10 if X.shape[0] > 256 else X.shape[0]))
-        self.m.fit(X)
-
-    def transform(self, X:np.ndarray):
-        if self.m is None:
-            raise ValueError("Model not initialized")
-        return self.m.transform(X)
-
-    def transform_oos(self, X:np.ndarray):
-        return self.transform(X)
-
 class _oos_base:
 
     def transform(self, X:np.ndarray):
@@ -351,7 +335,6 @@ class Methods:
 
             'ae': _autoencoder(self.__params__, self.verbose),
             'cdr': _cdr(self.__params__, self.verbose),
-            # 'ivis': _ivis(self.__params__),
             'dlmp-tsne': _dlmp_tsne(self.__params__, self.verbose),
             'dlmp-umap': _dlmp_umap(self.__params__, self.verbose),
 
