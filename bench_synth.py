@@ -10,8 +10,8 @@ import h5py as hf
 import numpy as np
 from utils import *
 
-def load_synth(manifold:str, diff:str, n_samples:int, n_stages:int):
-    with hf.File(f'datasets/synth/{manifold}_{diff}_{n_samples}.h5', 'r') as f:
+def load_synth(dataset_name:str, diff:str, n_stages:int):
+    with hf.File(f'datasets/synth/{dataset_name}_{diff}.h5', 'r') as f:
         datas = []
         for i in range(n_stages):
             datas.append({
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     methods_name = [
         'pca',
         'ae',
-        # 'cdr',
+        'cdr',
 
         'oos-mds',
         'lmds',
@@ -64,17 +64,14 @@ if __name__ == '__main__':
 
     # 要使用的数据集
     datasets = [
-        ['plane','structure', 2000, 1],
-        ['plane','dist', 2000, 2],
-        ['plane','prop', 2000, 4],
-
-        ['swissroll','structure', 2000, 1],
-        ['swissroll','dist', 2000, 2],
-        ['swissroll','prop', 2000, 4],
-
-        ['hybrid','structure', 2000, 1],
-        ['hybrid','dist', 2000, 2],
-        ['hybrid','prop', 2000, 4],
+        ['syn1', 'dist', 1],
+        ['syn1', 'prop', 4],
+        
+        ['syn2', 'dist', 1],
+        ['syn2', 'prop', 4],
+        
+        ['syn4', 'dist', 1],
+        ['syn4', 'prop', 4],
     ]
 
     meta = {
@@ -90,10 +87,10 @@ if __name__ == '__main__':
 
 
     for dataset in datasets:
-        [manifold, diff, n_samples, n_stages] = dataset
+        [manifold, diff, n_stages] = dataset
 
         # get dataset
-        stage_data = load_synth(manifold, diff, n_samples, n_stages)
+        stage_data = load_synth(manifold, diff, n_stages)
 
         for oos_stage_idx, data in enumerate(stage_data):
             E = data['E']

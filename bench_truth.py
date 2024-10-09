@@ -40,26 +40,26 @@ if __name__ == '__main__':
     logger.info(f'bench_time: {bench_time}')
 
     methods_name = [
-        # 'pca',
-        # 'ae',
-        # 'cdr',
+        'pca',
+        'ae',
+        'cdr',
 
         'oos-mds',
-        # 'lmds',
-        # 'kmds',
-        # 'mimds',
+        'lmds',
+        'kmds',
+        'mimds',
 
-        # 'oos-isomap',
-        # 'lisomap',
-        # 'kisomap',
+        'oos-isomap',
+        'lisomap',
+        'kisomap',
 
-        # 'ktsne',
-        # 'ptsne',
-        # 'ptsne22',
-        # 'dlmp-tsne',
+        'ktsne',
+        'ptsne',
+        'ptsne22',
+        'dlmp-tsne',
         
-        # 'pumap',
-        # 'dlmp-umap',
+        'pumap',
+        'dlmp-umap',
     ]
 
     n_methods = len(methods_name)
@@ -130,12 +130,10 @@ if __name__ == '__main__':
                     
                     # train projection
                     proj_train = method.transform(E)
-                    print(proj_train[:3,:])
 
                     # test projection
                     start_time = time.perf_counter()
                     proj_test = method.transform_oos(O)
-                    print(proj_test[:3,:])
                     
                     test_time = time.perf_counter() - start_time
                     test_runtime_res.append({

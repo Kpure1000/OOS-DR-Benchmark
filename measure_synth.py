@@ -10,8 +10,8 @@ import pandas as pd
 
 from utils import *
 
-def load_synth(manifold:str, diff:str, n_samples:int, n_stages:int):
-    with hf.File(f'datasets/synth/{manifold}_{diff}_{n_samples}.h5', 'r') as f:
+def load_synth(dataset_name:str, diff:str, n_stages:int):
+    with hf.File(f'datasets/synth/{dataset_name}_{diff}.h5', 'r') as f:
         datas = []
         for i in range(n_stages):
             datas.append({
@@ -74,11 +74,11 @@ if __name__ == '__main__':
     result_saved_path = f'results/synth/{bench_fold}/results.csv'
     # 度量
     for dataset in datasets:
-        [manifold, diff, n_samples, n_stages] = dataset
-        logger.info(f"Dataset '{manifold}-{diff}-{n_samples}'")
+        [manifold, diff, n_stages] = dataset
+        logger.info(f"Dataset '{manifold}-{diff}-{n_stages}'")
 
         # load data
-        stage_data = load_synth(manifold, diff, n_samples, n_stages)
+        stage_data = load_synth(manifold, diff, n_stages)
         for oos_stage_idx, data in enumerate(stage_data):
             for method_idx, method_name in enumerate(methods_name):
                 
