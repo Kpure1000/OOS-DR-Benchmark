@@ -33,13 +33,16 @@ class TSNE_NN():
 	def fit(self, data):
 		self.encoder = FCEncoder(data.shape[1], low_dim=self.n_components, act='lrelu')
 		batch_size = self.batch_size
-		print('perplexity:', self.perplexity)
+		if self.verbose:
+			print('perplexity:', self.perplexity)
 		
-		print('calc P')
+		if self.verbose:
+			print('calc P')
 		pre_embedding = TSNE(perplexity=self.perplexity).prepare_initial(data)
 		P_csc = pre_embedding.affinities.P
 			
-		print('Trying to put X into GPU')
+		if self.verbose:
+			print('Trying to put X into GPU')
 		X = torch.from_numpy(data).float()
 		X = X.to(self.device)
 		self.X = X
@@ -73,8 +76,12 @@ class TSNE_NN():
 			return P * torch.log(x)
 		
 		iteration = 0
-		print('optimizing...')
-		pbar = tqdm(range(self.n_epochs))
+		if self.verbose:
+			print('optimizing...')
+		if self.verbose:
+			pbar = tqdm(range(self.n_epochs))
+		else:
+			pbar = range(self.n_epochs)
 		for epoch in pbar:
 			iteration += 1
 
@@ -104,7 +111,7 @@ class TSNE_NN():
 				lr_sched.step()
 			
 			self.epoch_losses.append(np.mean(loss_total))
-			if (self.verbose):
+			if self.verbose:
 				pbar.set_description("Processing epoch %03d/%03d loss : %.5f time : %.5fs" % (epoch + 1, self.n_epochs, np.mean(loss_total), np.mean(update_time)))
 				# print('{:03d}/{:03d}'.format(epoch, self.n_epochs), '{:.5f}'.format(np.mean(self.loss_total)), '{:.5f}s'.format(np.mean(update_time)))
 	
