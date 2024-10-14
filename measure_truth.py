@@ -56,16 +56,16 @@ if __name__ == '__main__':
 
     # 指标
     metrics_name = [
-        # 't',
-        # 'c',
-        # 'nh',
+        't',
+        'c',
+        'nh',
         'lc',
         'tp',
-        # 'sd',
-        # 'sc',
-        # 'dsc',
-        # 'acc_oos',
-        # 'acc_e',
+        'sd',
+        'sc',
+        'dsc',
+        'acc_oos',
+        'acc_e',
     ]
     n_metrics = len(metrics_name)
 

@@ -76,8 +76,12 @@ if __name__ == '__main__':
         # ['dendritic', 576, 1],      
         # ['retina', 7606, 1],
         # ['pancreas', 7383, 1],
+
+        # ['raid', 1955, 1],
+        ['sensor', 7213, 1],
+        # ['merchant', 3897, 1],
          
-        ['isomapFace', 698, 1],   # 跑完啦
+        # ['isomapFace', 698, 1],   # 跑完啦
         # ['freyFace', 1965, 1],    # 跑完啦
     ]
 

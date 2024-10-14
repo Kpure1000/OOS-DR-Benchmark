@@ -3,6 +3,7 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import kneighbors_graph
 from scipy.sparse.csgraph import shortest_path
 from sklearn.neighbors import NearestNeighbors
+from .landmark import geodesic_distance
 
 class oos_Isomap:
     def __init__(self,n_components=2,n_neighbors=10):
@@ -20,8 +21,10 @@ class oos_Isomap:
 
     
     def get_geodesic_TD(self):
-        knn_graph = kneighbors_graph(self.D, n_neighbors=self.n_neighbors, mode='distance', include_self=True)
-        geodesic_TD = shortest_path(knn_graph, directed=False)
+        # knn_graph = kneighbors_graph(self.D, n_neighbors=self.n_neighbors, mode='distance', include_self=True)
+        # geodesic_TD = shortest_path(knn_graph, directed=False)
+
+        geodesic_TD = geodesic_distance(self.D, k=self.n_neighbors)
         
         return geodesic_TD
     
@@ -32,6 +35,7 @@ class oos_Isomap:
         part2 = -1.0 / self.n_samples * np.sum(tempM,axis=1).reshape((1,self.n_samples))
         part3 = -1.0 / self.n_samples * np.sum(tempM,axis=1).reshape((self.n_samples,1))
         part4 = 1.0 / self.n_samples ** 2 * np.sum(tempM)
+        print("part4", np.unique(np.isfinite(self.geodesic_TD), return_counts=True))
         
         return -0.5 * (part1 + part2 + part3 + part4)
 
