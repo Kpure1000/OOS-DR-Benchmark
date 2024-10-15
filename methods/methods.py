@@ -296,9 +296,11 @@ class _landmark_isomap(_oos_base):
         self.m = LandmarkIsomap(n_neighbors=self.knn).fit(X)
 
 class _kernel_mds(_oos_base):
+    def __init__(self, gpu=False):
+        self.gpu = gpu
 
     def fit(self, X:np.ndarray):
-        self.m = KernelMDS().fit(X)
+        self.m = KernelMDS(n_components=2, cuda=self.gpu).fit(X)
 
 class _kernel_isomap(_oos_base):
     def __init__(self, params: Parameters):
@@ -316,18 +318,19 @@ class _kernel_tsne(_oos_base):
 
 
 class _mi_mds(_oos_base):
-    def __init__(self, params: Parameters, verbose: bool = False) -> None:
+    def __init__(self, params: Parameters, verbose: bool = False, gpu=False) -> None:
         self.knn = params.get('knn', 'mi-mds')
         self.epochs = params.get('epochs', 'mi-mds')
         self.verbose = verbose
+        self.gpu = gpu
 
     def fit(self, X:np.ndarray):
-        self.m = MI_MDS(n_components=2, n_neighbors=self.knn, tol=0.0001, max_iter=self.epochs, verbose=self.verbose).fit(X)
+        self.m = MI_MDS(n_components=2, n_neighbors=self.knn, tol=0.0001, max_iter=self.epochs, verbose=self.verbose, cuda=self.gpu).fit(X)
 
 
 class Methods:
 
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False, gpu_accel=False):
         self.__params__ = Parameters()
         self.verbose = verbose
         self.methods = {
@@ -345,9 +348,9 @@ class Methods:
             'oos-mds': _oos_mds(),
             'oos-isomap': _oos_isomap(self.__params__),
 
-            'mimds': _mi_mds(self.__params__, self.verbose),
+            'mimds': _mi_mds(self.__params__, self.verbose, gpu=gpu_accel),
 
-            'kmds': _kernel_mds(),
+            'kmds': _kernel_mds(gpu=gpu_accel),
             'kisomap': _kernel_isomap(self.__params__),
             'ktsne': _kernel_tsne(self.__params__),
 

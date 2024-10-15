@@ -2,6 +2,7 @@ from sklearn.manifold import TSNE, Isomap, MDS
 from scipy.spatial.distance import pdist, squareform
 import numpy as np
 from scipy.spatial.distance import cdist
+from mdscuda import mds_fit, minkowski_pairs
 
 class _KernelBase_:
 
@@ -38,11 +39,16 @@ class _KernelBase_:
 
 
 class KernelMDS(_KernelBase_):
-    def __init__(self, n_components=2):
+    def __init__(self, n_components=2, cuda=False):
         self.n_components = n_components
+        self.cuda = cuda
 
     def fit(self, X):
-        y_train = MDS(n_components=self.n_components, normalized_stress='auto', n_jobs=-1).fit_transform(X)
+        if self.cuda:
+            # https://github.com/SethEBaldwin/mdscuda
+            y_train = mds_fit(delta=minkowski_pairs(X, sqform=False), n_dims=self.n_components)
+        else:
+            y_train = MDS(n_components=self.n_components, normalized_stress='auto', n_jobs=-1).fit_transform(X)
         super().fit(X, y_train)
 
         return self

@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     n_methods = len(methods_name)
     
-    methods = Methods()
+    methods = Methods(gpu_accel=True)
 
     # 要使用的数据集
     datasets = [

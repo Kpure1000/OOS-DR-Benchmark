@@ -3,18 +3,24 @@ from sklearn.neighbors import NearestNeighbors
 from scipy.spatial.distance import pdist, cdist
 from tqdm import tqdm
 import numpy as np
+from mdscuda import mds_fit, minkowski_pairs
 
 class MI_MDS:
-    def __init__(self, n_components=2, n_neighbors=5, tol=1e-4, max_iter=1000, verbose=False):
+    def __init__(self, n_components=2, n_neighbors=5, tol=1e-4, max_iter=1000, verbose=False, cuda=False):
         self.n_neighbors = n_neighbors
         self.n_components = n_components
         self.verbose = verbose
         self.tol = tol
         self.max_iter = max_iter
+        self.cuda = cuda
 
     def fit(self, X):
         self.X_train = X
-        self.P_train = MDS(n_components=self.n_components, normalized_stress='auto', n_jobs=-1).fit_transform(X)
+        if self.cuda:
+            # https://github.com/SethEBaldwin/mdscuda
+            self.P_train = mds_fit(delta=minkowski_pairs(X, sqform=False), n_dims=self.n_components)
+        else:
+            self.P_train = MDS(n_components=self.n_components, normalized_stress='auto', n_jobs=-1).fit_transform(X)
 
         return self
 
