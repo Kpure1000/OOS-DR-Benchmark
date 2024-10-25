@@ -53,7 +53,26 @@ class Parameters:
         param = methods_of_param[method_name]
         return param
 
-class _pca:
+class MethodBase:
+    def fit(self, X:np.ndarray):
+        """
+        Fit the training data
+        """
+        pass
+
+    def transform(self, X:np.ndarray):
+        """
+        Project the training data
+        """
+        pass
+
+    def transform_oos(self, X:np.ndarray):
+        """
+        Project the out-of-sample data
+        """
+        pass
+
+class _pca(MethodBase):
     def fit(self, X:np.ndarray):
         self.m = PCA(n_components=2)
         self.m.fit(X)
@@ -66,7 +85,7 @@ class _pca:
     def transform_oos(self, X:np.ndarray):
         return self.transform(X)
 
-class _ptsne:
+class _ptsne(MethodBase):
 
     def __init__(self, params, verbose=False):
         self.perplexities = params.get('perplexities', 'ptsne')
@@ -93,7 +112,7 @@ class _ptsne:
     def transform_oos(self, X:np.ndarray):
         return self.transform(X)
 
-class _ptsne_new:
+class _ptsne_new(MethodBase):
     
     def __init__(self, params, verbose=False):
         self.perplexities = params.get('perplexities', 'ptsne_new')
@@ -121,7 +140,7 @@ class _ptsne_new:
         return self.transform(X)
 
 
-class _pumap:
+class _pumap(MethodBase):
 
     def __init__(self, params, verbose=False):
         self.knn = params.get('knn', 'pumap')
@@ -140,7 +159,7 @@ class _pumap:
         return self.transform(X)
 
 
-class _autoencoder:
+class _autoencoder(MethodBase):
     def __init__(self, params, verbose=False):
         self.epochs = params.get('epochs', 'autoencoder')
         self.lr = params.get('lr', 'autoencoder')
@@ -160,7 +179,7 @@ class _autoencoder:
     def transform_oos(self, X:np.ndarray):
         return self.transform(X)
 
-class _dlmp_tsne:
+class _dlmp_tsne(MethodBase):
     """
         [Deep learning multidimensional projections](https://github.com/mespadoto/dlmp)
     """
@@ -188,7 +207,7 @@ class _dlmp_tsne:
             raise ValueError("Model not initialized")
         return self.m.predict(self.std.transform(X), verbose=self.verbose)
 
-class _dlmp_umap:
+class _dlmp_umap(MethodBase):
     """
         [Deep learning multidimensional projections](https://github.com/mespadoto/dlmp)
     """
@@ -216,7 +235,7 @@ class _dlmp_umap:
             raise ValueError("Model not initialized")
         return self.m.predict(self.std.transform(X), verbose=self.verbose)
 
-class _ptsne22:
+class _ptsne22(MethodBase):
     def __init__(self, params:Parameters, verbose=False):
         self.perplexities = params.get('perplexities', 'ptsne22')
         self.epochs = params.get('epochs', 'ptsne22')
@@ -236,7 +255,7 @@ class _ptsne22:
     def transform_oos(self, X:np.ndarray):
         return self.transform(X)
 
-class _cdr:
+class _cdr(MethodBase):
     def __init__(self, params: Parameters, verbose=False) -> None:
         self.epochs = params.get('epochs', 'cdr')
         self.knn = params.get('knn', 'cdr')
@@ -258,7 +277,7 @@ class _cdr:
     def transform_oos(self, X:np.ndarray):
         return self.transform(X)
 
-class _oos_base:
+class _oos_base(MethodBase):
 
     def transform(self, X:np.ndarray):
         if self.m is None:
@@ -366,7 +385,7 @@ class Methods:
     def parameters(self):
         return self.__params__
 
-    def get(self, name: str):
+    def get(self, name: str)->MethodBase:
         if name not in self.methods:
             raise ValueError(f"Unknown method: {name}")
         return self.methods[name]
