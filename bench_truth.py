@@ -68,21 +68,24 @@ if __name__ == '__main__':
 
     # 要使用的数据集
     datasets = [
-        # ['cnae9', 1080, 1],         # 跑完啦
-        # ['fashionMNIST', 4200, 1],  # 跑完啦
-        # ['cifar10', 3250, 1],       # 跑完啦
-        # ['imdb', 5000, 1],          # 跑完啦
+        ['letter', 6450, 1],
+        ['fashionMNIST', 4200, 1],  
+        ['fmd', 997, 1],         
+        ['secom', 1567, 1],
+        ['cnae9', 1080, 1],         
+        ['spambase', 4601, 1],
+        ['hatespeech', 2973, 1],
 
-        # ['dendritic', 576, 1],      
-        # ['retina', 7606, 1],
-        # ['pancreas', 7383, 1],
-
-        # ['raid', 1955, 1],
+        ['raid', 1955, 1],
         ['sensor', 7213, 1],
-        # ['merchant', 3897, 1],
+        ['dendritic', 576, 1],
+        ['merchant', 3897, 1],
          
-        # ['isomapFace', 698, 1],   # 跑完啦
-        # ['freyFace', 1965, 1],    # 跑完啦
+        ['isomapFace', 698, 1],
+        ['headpose', 558, 1],
+        ['coil20', 1440, 1],
+        ['bison', 5000, 1],
+
     ]
 
     meta = {

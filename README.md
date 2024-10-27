@@ -39,8 +39,6 @@ Scenario 2: Distribution Diff
 |raid|images|1955|?|?|?|
 |sensor|tables|7213|?|?|?|
 |dendritic|tables|576|?|?|?|
-|pancrease|tables|7383|?|?|?|
-|retina|tables|7606|?|?|?|
 |merchant|text|3897|?|?|?|
 
 #### Scenario 3: Intrinsic Structure Analysis
@@ -49,7 +47,7 @@ Scenario 2: Distribution Diff
 
 |name|type|N_samples|N_dims|
 |-|-|-|-|
-|buffalo|tables|?|3|
 |isomapFace|images|698|512|
-|freyFace|images|1965|560|
-|coil20|images|1440|?|
+|headpose|images|558|1536|
+|coil20|images|1440|16384|
+|bison|tables|5000|3|
