@@ -3,6 +3,7 @@ import os
 import json
 import traceback
 import h5py as hf
+import yaml
 from metrics import *
 from datetime import datetime
 from logger import getLogger
@@ -10,18 +11,18 @@ import pandas as pd
 
 from utils import *
 
-def load_truth(dataset_name, n_samples:int, n_stages:int):
+def load_truth(dataset_name, n_samples:int, n_stages:int, is_Labeled:bool):
     with hf.File(f'datasets/truth/{dataset_name}_{n_samples}.h5', 'r') as f:
         datas = []
         for i in range(n_stages):
             gE = f['E']
             gO = f['O']
-            datas.append({
-                'E':        np.array(gE[f'X{i}']),
-                'O':        np.array(gO[f'X{i}']),
-                'y_train':  np.array(gE[f'y{i}'] if f'y{i}' in gE else None),
-                'y_test':   np.array(gO[f'y{i}'] if f'y{i}' in gO else None),
-            })
+            datas.append((
+                gE[f'X{i}'][:],
+                gO[f'X{i}'][:],
+                gE[f'y{i}'][:] if is_Labeled else None,
+                gO[f'y{i}'][:] if is_Labeled else None,
+            ))
         return datas
 
 if __name__ == '__main__':
@@ -49,25 +50,13 @@ if __name__ == '__main__':
 
     with open(f'results/truth/{bench_fold}/meta.json', 'r') as f:
         meta = json.loads(f.read())
+        datasets = meta['datasets']
+        methods_name = meta['methods']
 
-    datasets = meta['datasets']
-    methods_name = meta['methods']
-    n_methods = len(methods_name)
-
-    # 指标
-    metrics_name = [
-        't',
-        'c',
-        'nh',
-        'lc',
-        'tp',
-        'sd',
-        'sc',
-        'dsc',
-        'acc_oos',
-        'acc_e',
-    ]
-    n_metrics = len(metrics_name)
+    with open('benchmark.yml', 'r', encoding='utf-8') as f:
+        bench_conf = yaml.load(f, Loader=yaml.FullLoader)
+        metrics_name = bench_conf['metrics']
+        logger.info(f'Load Config Success')
 
     metrics = Metrics()
 
@@ -76,24 +65,17 @@ if __name__ == '__main__':
     result_saved_path = f'results/truth/{bench_fold}/results.csv'
     # 度量
     for dataset in datasets:
-        [dataset_name, n_samples, n_stages] = dataset
+        [dataset_name, n_samples, n_stages, is_Labeled] = dataset
         logger.info(f"Dataset '{dataset_name}-{n_samples}'")
 
         # load data
-        stage_data = load_truth(dataset_name=dataset_name, n_samples=n_samples, n_stages=n_stages)
-        for oos_stage_idx, data in enumerate(stage_data):
+        stage_data = load_truth(dataset_name=dataset_name, n_samples=n_samples, n_stages=n_stages, is_Labeled=is_Labeled)
+        for oos_stage_idx, (X_train, X_test, y_train, y_test) in enumerate(stage_data):
             for method_idx, method_name in enumerate(methods_name):
                 
-                logger.info(f"Metrics for '{method_name}-{dataset_name}-{oos_stage_idx}' updating")
+                logger.info(f">>>>> Metrics for Method '{method_name}' on Dataset '{dataset_name}-{oos_stage_idx}' calculating...")
 
                 try:
-                    
-                    # load data and projection
-                    E = data['E']
-                    O = data['O']
-                    y_train = data['y_train']
-                    y_test = data['y_test']
-
                     train_proj_saved_path = f'results/truth/{bench_fold}/projections/{dataset_name}_{method_name}_{oos_stage_idx}_train.csv'
                     proj_train = load_projection(train_proj_saved_path)
 
@@ -101,7 +83,7 @@ if __name__ == '__main__':
                     proj_test = load_projection(test_proj_saved_path)
 
                     # update distance, label etc.
-                    metrics.update_metrics(X_train=E, X_train_Embedded=proj_train, X_test=O, X_test_Embedded=proj_test, y_train=y_train, y_test=y_test)
+                    metrics.update_metrics(X_train=X_train, X_train_Embedded=proj_train, X_test=X_test, X_test_Embedded=proj_test, y_train=y_train, y_test=y_test)
                     
                 except Exception as e:
                     logger.error(f"Metrics error at '{method_name}-{dataset_name}-{oos_stage_idx}', skip. Info: \n{traceback.format_exc()}, skip")
@@ -113,6 +95,8 @@ if __name__ == '__main__':
                 for metric_idx, metric_name in enumerate(metrics_name):
                     try:
                         (res, m_name) = metrics.run_single(metric_name)
+                        if res is None:
+                            continue
                         res = float(res)
                         logger.info(f"Metric '{m_name}' done, result: {res:.4g}")
                         # 保存度量结果

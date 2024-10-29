@@ -5,28 +5,38 @@ from sklearn.neighbors import KNeighborsClassifier, NearestNeighbors
 import scipy.stats, scipy.spatial
 import scipy.spatial.distance as dis
 import torch
+import yaml
+
+class Parameters:
+    def __init__(self):
+        with open('parameters.yml', 'r') as f:
+            self.__params__ = yaml.load(f, Loader=yaml.FullLoader)['metrics']
+
+    def available(self):
+        return list(self.__params__.keys())
+
+    def get(self, metric_name:str):
+        if metric_name not in self.__params__:
+            return {}
+        param = self.__params__[metric_name]
+        return param
 
 class Metrics:
     def __init__(self):
         self.metrics = {
-            #abbr        name                        function                     params           
-            't':         ('Trustworthiness',         self.trustworthiness,        {'k': 7}         ),
-            'c':         ('Continuity',              self.continuity,             {'k': 7}         ),
-            'nh':        ('Neighborhood_Hit',        self.neighborhood_hit,       {'k': 7}         ),
-            # 'ale':       ('Average_Local_Error',     self.average_local_error,    {}               ),
-            'lc':        ('LC_meta_criterion',       self.LC_meta_criterion,      {'k': 7}         ),
-
-            # 'ns':        ('Normalized_Stress',       self.normalized_stress,      {}               ),
-            'sd':        ('Shepard_Goodness',        self.shepard_goodness,       {}               ),
-            'tp':        ('Topographic_Product',     self.topographic_product,    {}               ),
-
-            'sc':        ('Silhouette_Coefficient',  self.silhouette_coefficient, {'seed': 1}      ),
-            'dsc':       ('DiStance_Consistency',    self.distance_consistency,   {}               ),
-            
-            # 'auc':       ('Area_Under_Curve',        self.area_under_curve,       {'k': 7}         ),
-            'acc_oos':   ('ACCuracy_test',           self.accuracy,               {'train':False}  ),
-            'acc_e':     ('ACCuracy_train',          self.accuracy,               {'train': True}  ),
+            #abbr        name                        function                           
+            't':         ('Trustworthiness',         self.trustworthiness        ),
+            'c':         ('Continuity',              self.continuity             ),
+            'nh':        ('Neighborhood_Hit',        self.neighborhood_hit       ),
+            'lc':        ('LC_Meta_Criterion',       self.LC_meta_criterion      ),
+            'sd':        ('Shepard_Goodness',        self.shepard_goodness       ),
+            'tp':        ('Topographic_Product',     self.topographic_product    ),
+            'sc':        ('Silhouette_Coefficient',  self.silhouette_coefficient ),
+            'dsc':       ('Distance_Consistency',    self.distance_consistency   ),
+            'acc_oos':   ('ACCuracy_Test',           self.acc_oos                ),
+            'acc_e':     ('ACCuracy_Train',          self.acc_e                  ),
         }
+        self.params = Parameters()
 
     def available(self):
         return list(self.metrics.keys())
@@ -36,7 +46,7 @@ class Metrics:
             raise ValueError(f"Unknown Metric '{metric_name}'")
         met = self.metrics[metric_name]
         func = met[1]
-        kwargs = met[2]
+        kwargs = self.params.get(metric_name)
         return (func(**kwargs), met[0])
 
     def update_metrics(self, X_train: np.ndarray, X_train_Embedded: np.ndarray, X_test: np.ndarray, X_test_Embedded: np.ndarray, y_train: np.ndarray=None, y_test: np.ndarray = None):
@@ -57,7 +67,7 @@ class Metrics:
     def normalized_stress(self):
         return np.sum((self.dist_H_l - self.dist_L_l)**2) / np.sum(self.dist_H_l**2)
 
-    def trustworthiness(self, k: int = 7):
+    def trustworthiness(self, k:int):
 
         dist_H = self.dist_H.copy()
         np.fill_diagonal(dist_H, np.inf)
@@ -83,7 +93,7 @@ class Metrics:
         )
         return t
 
-    def continuity(self, k: int = 7):
+    def continuity(self, k:int):
         ind_X = (
             NearestNeighbors(n_neighbors=k)
             .fit(self.X_test)
@@ -111,9 +121,10 @@ class Metrics:
     def shepard_goodness(self):
         return scipy.stats.spearmanr(a=self.dist_H_l, b=self.dist_L_l)[0]
 
-    def silhouette_coefficient(self, seed: int = 42):
+    def silhouette_coefficient(self, seed:int):
         if self.y_test is None:
-            raise ValueError("Label is None")
+            # raise ValueError("Label is None")
+            return None
         dist_E = self.dist_L.copy()
         dist_E[dist_E < 1e-7] = 0.0
         dist_E[dist_E == np.inf] = 0.0
@@ -134,7 +145,8 @@ class Metrics:
         [2] https://github.com/hj-n/ltnc/blob/master/src/ltnc/cvm.py
         """
         if self.y_test is None:
-            raise ValueError("Label is None")
+            # raise ValueError("Label is None")
+            return None
 
         unique_labels = np.unique(self.y_test)
         n_samples = self.Proj_test.shape[0]
@@ -167,54 +179,16 @@ class Metrics:
 
         return counts / n_samples
 
-    def neighborhood_hit(self, k=7):
+    def neighborhood_hit(self, k:int):
         if self.y_test is None:
-            raise ValueError("Label is None")
+            # raise ValueError("Label is None")
+            return None
 
         knn = KNeighborsClassifier(n_neighbors=k)
         knn.fit(self.Proj_test, self.y_test)
 
         neighbors = knn.kneighbors(self.Proj_test, return_distance=False)
         return np.mean(np.mean((self.y_test[neighbors] == np.tile(self.y_test.reshape((-1, 1)), k)).astype('uint8'), axis=1))
-
-    # def area_under_curve(self, k=7):
-    #     dist_mat = dis.squareform(dis.pdist(np.vstack((self.X_Embedded, self.X_org_Embedded))))
-    #     n_samples = self.X_Embedded.shape[0]
-    #     dist_mat_test2train = dist_mat[n_samples:, 0:n_samples]
-    #     dist_mat_test2train = dist_mat_test2train.T
-    #     dist_mat_test2train.sort(axis=1)
-    #     y_socre = dist_mat_test2train[:, :k].sum(axis=1)
-    #     y_true = (self.label > 0).astype(int)
-    #     fpr, tpr, thresholds = roc_curve(y_true, y_socre, pos_label=1)
-    #     return auc(fpr, tpr)
-
-
-    def area_under_curve(self, k=7):
-        if self.y_test is None:
-            raise ValueError("Label is None")
-
-        # 获取测试集样本到训练集样本的距离
-        dist_mat = dis.cdist(self.Proj_test, self.Proj_train, metric='euclidean')
-        dist_mat.sort(axis=1)
-        # dist_mat = dis.squareform(dis.pdist(np.vstack((self.X_Embedded, self.X_org_Embedded))))
-
-        # 获取测试集样本到训练集样本的距离
-        # n_train = self.X_org_Embedded.shape[0]
-        # n_test = self.X_Embedded.shape[0]
-        # test_distances = dist_mat[n_test:, :n_train]
-
-        # 计算每个测试样本到最近的k个训练样本的距离和
-        # D_test = np.sum(test_distances[:, :k], axis=1)
-        D_test = np.sum(dist_mat[:, :k], axis=1)
-
-        # 将距离和转换为预测概率（这里使用简单的阈值方法）
-        y_true = (self.y_test > 0).astype(int)
-        # 计算AUC
-        fpr, tpr, thresholds = roc_curve(y_true, D_test, pos_label=1)
-        auc_score = auc(fpr, tpr)
-
-        return auc_score
-
 
     def average_local_error(self):
         dist_H_Norm = self.dist_H / np.max(self.dist_H)
@@ -228,8 +202,18 @@ class Metrics:
 
         return mean_ij
 
-    def accuracy(self, train: bool):
+    def acc_oos(self):
+        return self.__accuracy(False)
 
+    def acc_e(self):
+        return self.__accuracy(True)
+
+    def __accuracy(self, train:bool):
+
+        if self.y_train is None or self.y_test is None:
+            # raise ValueError("Label is None")
+            return None
+        
         proj = self.Proj_train if train else self.Proj_test
         y_true = self.y_train if train else self.y_test
 
@@ -240,7 +224,7 @@ class Metrics:
 
         return accuracy_score(y_true, y_pred)
 
-    def topographic_product(self, batch_size=300):
+    def topographic_product(self, batch_size:int):
 
         N = self.X_test.shape[0]
         k = N - 1

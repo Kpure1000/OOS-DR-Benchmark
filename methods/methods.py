@@ -31,7 +31,7 @@ import numpy as np
 class Parameters:
     def __init__(self):
         with open('parameters.yml', 'r') as f:
-            self.__params__ = yaml.load(f, Loader=yaml.FullLoader)
+            self.__params__ = yaml.load(f, Loader=yaml.FullLoader)['methods']
 
     def available(self):
         return list(self.__params__.keys())

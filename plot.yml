@@ -1,0 +1,169 @@
+truth:
+  letter:       
+    label_name: y
+    cmap: tab20
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 3.0
+    size_test:  1.5
+
+  fashionMNIST: 
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 3.0
+    size_test:  1.5
+
+  fmd:          
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 6.0
+    size_test:  4.5
+
+  secom:        
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.1
+    alpha_test: 0.65
+    size_train: 4.0
+    size_test:  2.0
+
+  cnae9:        
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.3
+    alpha_test: 0.7
+    size_train: 10.0
+    size_test:  7.0
+
+  spambase:     
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 3.0
+    size_test:  1.5
+
+  hatespeech:   
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 3.0
+    size_test:  1.5
+
+  raid:         
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 5.0
+    size_test:  3.0
+
+  sensor:       
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.1
+    alpha_test: 0.5
+    size_train: 2.0
+    size_test:  2.0
+
+  dendritic:    
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 8
+    size_test:  5
+
+  merchant:     
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.08
+    alpha_test: 0.7
+    size_train: 1.0
+    size_test:  2.0
+
+  isomapFace:   
+    label_name: posex
+    cmap: viridis
+    alpha_train: 0.2
+    alpha_test: 0.7
+    size_train: 8.0
+    size_test:  10.0
+
+  headpose:     
+    label_name: posex
+    cmap: viridis
+    alpha_train: 0.1
+    alpha_test: 0.7
+    size_train: 6.0
+    size_test:  10.0
+
+  coil20:       
+    label_name: yaw
+    cmap: viridis
+    alpha_train: 0.1
+    alpha_test: 0.6
+    size_train: 5.0
+    size_test:  5.0
+
+  bison:        
+    label_name: z
+    cmap: viridis
+    alpha_train: 0.1
+    alpha_test: 0.2
+    size_train: 4.0
+    size_test:  2.5
+
+synth:
+  syn1_dist: 
+    label_name: y
+    cmap: Paired
+    alpha_train: 0.1
+    alpha_test: 0.7
+    size_train: 2.5
+    size_test:  2.0
+
+  syn1_prop: 
+    label_name: y
+    cmap: Paired
+    alpha_train: 0.1
+    alpha_test: 0.7
+    size_train: 2.5
+    size_test:  2.0
+
+  syn2_dist: 
+    label_name: y
+    cmap: Paired
+    alpha_train: 0.1
+    alpha_test: 0.7
+    size_train: 2.5
+    size_test:  2.0
+
+  syn2_prop: 
+    label_name: y
+    cmap: Paired
+    alpha_train: 0.1
+    alpha_test: 0.7
+    size_train: 2.5
+    size_test:  2.0
+
+  syn4_dist: 
+    label_name: y
+    cmap: Paired
+    alpha_train: 0.1
+    alpha_test: 0.7
+    size_train: 2.5
+    size_test:  2.0
+
+  syn4_prop: 
+    label_name: y
+    cmap: Paired
+    alpha_train: 0.1
+    alpha_test: 0.7
+    size_train: 2.5
+    size_test:  2.0

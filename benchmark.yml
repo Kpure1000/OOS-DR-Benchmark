@@ -1,0 +1,53 @@
+methods:
+  - pca
+  - ae
+  - cdr
+  - oos-mds
+  - lmds
+  - kmds
+  - mimds
+  - oos-isomap
+  - lisomap
+  - kisomap
+  - ktsne
+  - ptsne
+  - ptsne22
+  - dlmp-tsne
+  - pumap
+  - dlmp-umap
+datasets:
+  truth:  # name, n_samples, n_stages, is_labeled
+    - [letter,        6450,  1, True ]
+    - [fashionMNIST,  4200,  1, True ]
+    - [fmd,           997,   1, True ]
+    - [secom,         1567,  1, True ]
+    - [cnae9,         1080,  1, True ]
+    - [spambase,      4601,  1, True ]
+    - [hatespeech,    2973,  1, True ]
+    - [raid,          1955,  1, True ]
+    - [sensor,        7213,  1, True ]
+    - [dendritic,     576,   1, True ]
+    - [merchant,      3897,  1, True ]
+    - [isomapFace,    698,   1, False]
+    - [headpose,      558,   1, False]
+    - [coil20,        1440,  1, False]
+    - [bison,         5000,  1, False]
+
+  synth:  # name, diff, n_stages, is_labeled
+    - [syn1, dist, 1, True]
+    - [syn1, prop, 4, True]
+    - [syn2, dist, 1, True]
+    - [syn2, prop, 4, True]
+    - [syn4, dist, 1, True]
+    - [syn4, prop, 4, True]
+metrics:
+  - t
+  - c
+  - nh
+  - lc
+  - tp
+  - sd
+  - sc
+  - dsc
+  - acc_oos
+  - acc_e
