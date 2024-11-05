@@ -145,7 +145,7 @@ class LinkInfo:
         link_indices = cur_new_links[:, 1:3]
         link_types = cur_new_links[:, 3]
 
-        self.new_link_spreads = np.array(cur_new_link_spreads, dtype=np.int)
+        self.new_link_spreads = np.array(cur_new_link_spreads, dtype=np.int32)
         link_num = len(cur_new_link_spreads)
         cur_total_link_num = np.sum(cur_new_link_spreads) + np.sum(~np.array(cur_new_link_spreads, dtype=np.bool))
         if link_num <= 0:

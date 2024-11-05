@@ -13,19 +13,19 @@ def assign_weighted_neighbor_samples(symmetry_knn_indices, symmetry_knn_weights,
     n_samples = symmetry_knn_indices.shape[0]
     repo_size = epoch_num
     sample_num_per_neighbor = symmetry_knn_weights * repo_size
-    neighbor_sample_repo = np.empty((n_samples, repo_size), dtype=np.int)
+    neighbor_sample_repo = np.empty((n_samples, repo_size), dtype=np.int32)
 
     for i in range(n_samples):
-        sample_num_per_neighbor[i] = np.ceil(sample_num_per_neighbor[i]).astype(np.int)
+        sample_num_per_neighbor[i] = np.ceil(sample_num_per_neighbor[i]).astype(np.int32)
         if np.sum(sample_num_per_neighbor[i]) < epoch_num:
             sample_num_per_neighbor[i] = \
                 np.ones_like(sample_num_per_neighbor[i]) * np.ceil(epoch_num / n_neighbors)
 
         tmp_num = len(symmetry_knn_indices[i])
-        tmp_repo = np.repeat(symmetry_knn_indices[i].astype(np.int), sample_num_per_neighbor[i][:tmp_num].astype(np.int).squeeze())
+        tmp_repo = np.repeat(symmetry_knn_indices[i].astype(np.int32), sample_num_per_neighbor[i][:tmp_num].astype(np.int32).squeeze())
         num = min(repo_size, len(tmp_repo))
         np.random.shuffle(tmp_repo)
-        neighbor_sample_repo[i, :num] = tmp_repo[:num].astype(np.int)
+        neighbor_sample_repo[i, :num] = tmp_repo[:num].astype(np.int32)
 
     return neighbor_sample_repo
 
@@ -57,7 +57,7 @@ class SimCLRDataTransform(object):
         self.neighbor_sample_repo = assign_weighted_neighbor_samples(norm_nn_indices,
                                                                      norm_nn_weights, n_neighbors,
                                                                      epoch_num)
-        self.neighbor_sample_index = np.zeros(self.n_samples, dtype=np.int)
+        self.neighbor_sample_index = np.zeros(self.n_samples, dtype=np.int32)
 
     def _neighbor_index_fixed(self, index):
         sim_index = self.neighbor_sample_repo[index][self.neighbor_sample_index[index]]

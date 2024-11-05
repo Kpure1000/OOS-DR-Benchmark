@@ -59,8 +59,8 @@ class ICLPTrainer(CDRTrainer):
             link_related_indices, x_ranks, y_ranks = np.intersect1d(all_indices, flattened_all_link_indices,
                                                                     return_indices=True)
             if len(link_related_indices) > 0:
-                per_link_indices = (y_ranks // 2).astype(np.int)
-                resp_indices = all_link_indices[per_link_indices, ((y_ranks + 1) % 2).astype(np.int)]
+                per_link_indices = (y_ranks // 2).astype(np.int32)
+                resp_indices = all_link_indices[per_link_indices, ((y_ranks + 1) % 2).astype(np.int32)]
                 resp_link_types = all_link_types[per_link_indices]
                 resp_link_weights = all_link_weights[per_link_indices]
                 final_indices = []
@@ -72,9 +72,9 @@ class ICLPTrainer(CDRTrainer):
                         final_x_ranks.append(x_ranks[i])
                         final_link_weights.append(resp_link_weights[i])
 
-                final_indices = np.array(final_indices, dtype=np.int)
-                final_link_types = np.array(final_link_types, dtype=np.int)
-                final_x_ranks = np.array(final_x_ranks, dtype=np.int)
+                final_indices = np.array(final_indices, dtype=np.int32)
+                final_link_types = np.array(final_link_types, dtype=np.int32)
+                final_x_ranks = np.array(final_x_ranks, dtype=np.int32)
                 final_link_weights = np.array(final_link_weights, dtype=np.float)
 
                 if len(final_indices) > 0:
@@ -140,8 +140,8 @@ class ICLPTrainer(CDRTrainer):
 
             if link_type == MUST_LINK:
                 if link_spreads[i] == UN_SPREAD:
-                    symm_knn_indices[h_idx] = np.array([t_idx], dtype=np.int)
-                    symm_knn_indices[t_idx] = np.array([h_idx], dtype=np.int)
+                    symm_knn_indices[h_idx] = np.array([t_idx], dtype=np.int32)
+                    symm_knn_indices[t_idx] = np.array([h_idx], dtype=np.int32)
                     symm_no_norm_weights[h_idx] = np.array([1], dtype=np.float)
                     symm_no_norm_weights[t_idx] = np.array([1], dtype=np.float)
                 else:
@@ -175,6 +175,6 @@ class ICLPTrainer(CDRTrainer):
         sampled_indices = random.sample(list(np.arange(0, self.n_samples, 1)), sampled_num)
         if self.link_info is not None:
             sampled_indices = np.union1d(sampled_indices,
-                                         np.ravel(self.link_info.crs_indices[:, [1, 2]]).astype(np.int))
+                                         np.ravel(self.link_info.crs_indices[:, [1, 2]]).astype(np.int32))
         self.train_loader.sampler.update_indices(sampled_indices, True)
         self.finetune_data_num = len(sampled_indices)
