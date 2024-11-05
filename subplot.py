@@ -7,10 +7,14 @@ def subplot_structure(data, methods, path, large_is_best):
 
     structures = ["coord", "roll", "eight"]
 
-    # 定义颜色列表
-    colors = ['#ffffff', '#bcbcbc']
+    # # 定义颜色列表
+    # colors = ['#ffffff', '#bcbcbc']
+    # # 创建自定义的离散色图
+    # custom_cmap = mcolors.ListedColormap(colors)
+    colors = ['#fafafa', '#dbdbdb', '#bdbdbd'] # 400
+    n_bins = 200
     # 创建自定义的离散色图
-    custom_cmap = mcolors.ListedColormap(colors)
+    custom_cmap = mcolors.LinearSegmentedColormap.from_list("my_cm", colors, N=n_bins)
 
     fig_size = (8, 2)
 
@@ -18,7 +22,7 @@ def subplot_structure(data, methods, path, large_is_best):
 
     # data = np.random.rand(len(structures), len(methods)) * 1
 
-    highlight_table(data, structures, methods, large_is_best=large_is_best, show_xlabel=False, cmap=custom_cmap)
+    highlight_table(data, structures, methods, large_is_best=large_is_best, show_xlabel=False, show_ylabel=False, cmap=custom_cmap)
 
     fig.savefig(path, dpi=300, transparent=True)
 

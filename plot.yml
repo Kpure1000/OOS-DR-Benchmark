@@ -122,7 +122,7 @@ truth:
 synth:
   syn1_dist: 
     label_name: y
-    cmap: Paired
+    cmap: tab10
     alpha_train: 0.1
     alpha_test: 0.7
     size_train: 2.5
@@ -130,15 +130,15 @@ synth:
 
   syn1_prop: 
     label_name: y
-    cmap: Paired
+    cmap: tab10
     alpha_train: 0.1
     alpha_test: 0.7
     size_train: 2.5
-    size_test:  2.0
+    size_test:  4.0
 
   syn2_dist: 
     label_name: y
-    cmap: Paired
+    cmap: tab10
     alpha_train: 0.1
     alpha_test: 0.7
     size_train: 2.5
@@ -146,15 +146,15 @@ synth:
 
   syn2_prop: 
     label_name: y
-    cmap: Paired
+    cmap: tab10
     alpha_train: 0.1
     alpha_test: 0.7
     size_train: 2.5
-    size_test:  2.0
+    size_test:  4.0
 
   syn4_dist: 
     label_name: y
-    cmap: Paired
+    cmap: tab10
     alpha_train: 0.1
     alpha_test: 0.7
     size_train: 2.5
@@ -162,8 +162,8 @@ synth:
 
   syn4_prop: 
     label_name: y
-    cmap: Paired
+    cmap: tab10
     alpha_train: 0.1
     alpha_test: 0.7
     size_train: 2.5
-    size_test:  2.0
+    size_test:  4.0

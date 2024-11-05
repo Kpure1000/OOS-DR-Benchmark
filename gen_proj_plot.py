@@ -23,11 +23,13 @@ def subplot_projection(ax: Axes,
                        size_train,
                        size_test,
                        cmap,
-                       show_label=False):
+                       show_label=False,
+                       show_train=True):
 
     proj_train = load_projection(train_set_path)
 
-    ax.scatter(proj_train[:,0], proj_train[:,1], c=label_train, cmap=cmap if show_label else'gray', s=size_train, marker='o', alpha=alpha_train)
+    if show_train:
+        ax.scatter(proj_train[:,0], proj_train[:,1], c=label_train, cmap=cmap if show_label else'gray', s=size_train, marker='o', alpha=alpha_train)
 
     proj_test = load_projection(test_set_path)
 
@@ -54,6 +56,7 @@ def plot_projection(save_params,
                     n_cols,
                     title,
                     show_label,
+                    show_train,
                     alpha_train,
                     alpha_test,
                     size_train,
@@ -87,6 +90,7 @@ def plot_projection(save_params,
                            label_train=label_train,
                            label_test=label_test,
                            show_label=show_label,
+                           show_train=show_train,
                            alpha_train=alpha_train,
                            alpha_test=alpha_test,
                            size_train=size_train,
@@ -105,7 +109,8 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--input', type=str, required=True)
     parser.add_argument('-n', '--nrows', type=int, default=4)
     parser.add_argument('-c', '--cover', action='store_true', required=False, help="Cover plots if exist")
-    parser.add_argument('--hide-label', action='store_true', required=False, help="Hide train set label")
+    parser.add_argument('--hide-label', action='store_false', required=False, help="Hide train set label")
+    parser.add_argument('--show-train', action='store_true', required=False, help="Show train set")
 
     args = parser.parse_args()
 
@@ -122,7 +127,7 @@ if __name__ == '__main__':
     if not os.path.exists(result_path):
         raise OSError(f"Result path '{result_path}' does not exist")
 
-    cover = args.cover != None
+    cover = args.cover
 
     os.makedirs(f"imgs/{args.type}/", exist_ok=True)
 
@@ -137,7 +142,8 @@ if __name__ == '__main__':
     # plot param
     n_rows = int(args.nrows)
     n_cols = int(np.ceil(len(methods) / n_rows))
-    show_label = args.hide_label is None
+    show_label = args.hide_label
+    show_train = args.show_train
 
     # save path
     save_path = f"imgs/{args.type}/{args.input}/"
@@ -206,6 +212,7 @@ if __name__ == '__main__':
                             n_rows=n_rows,
                             n_cols=n_cols,
                             show_label=show_label,
+                            show_train=show_train,
                             alpha_train = alpha_train,
                             alpha_test = alpha_test,
                             size_train = size_train,

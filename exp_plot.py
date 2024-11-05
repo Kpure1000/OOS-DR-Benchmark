@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import Axes 
 from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 import matplotlib
@@ -19,7 +20,7 @@ def highlight_table(data, row_labels, col_labels, large_is_best=True, show_xlabe
     data_re[np.arange(data.shape[0]), best_idxs] = 1
 
     # Plot the heatmap
-    im = ax.imshow(data_re, **kwargs)
+    im = ax.imshow(data, **kwargs)
 
     # Create colorbar
     cbar=None
@@ -63,7 +64,7 @@ def highlight_table(data, row_labels, col_labels, large_is_best=True, show_xlabe
             im.axes.text(j, i, f'{val:.2f}' if abs(val) < 10 else f'{val:.1e}', **kw)
 
 
-def diff_bar(data, col_labels, show_xlabel=True, show_legend=False, ax=None, cbar_kw=None, cbarlabel="", ymin=0, **kwargs):
+def diff_bar(data, col_labels, show_xlabel=True, show_legend=False, ax:Axes=None, cbar_kw=None, cbarlabel="", ymin=0, **kwargs):
     if ax is None:
         ax = plt.gca()
 
@@ -101,20 +102,20 @@ def diff_bar(data, col_labels, show_xlabel=True, show_legend=False, ax=None, cba
     # raw value
     ax.plot(x, data[0,:], 'o', color=raw_color, markersize=4)
     # oos value
-    ax.plot(x, data[1,:], 'x', color=oos_color, markersize=4)
+    ax.plot(x, data[1,:], '^', color=oos_color, markersize=4)
 
-    label_fmt = matplotlib.ticker.StrMethodFormatter('{x:.2f}')
-    # up&down labels
-    for j,xpos in enumerate(x):
-        inv = data[0,j] > data[1,j] # idx0 is greater
-        yoffset_up = 0.07 * (total_max - total_min)
-        yoffset_down = -0.08 * (total_max - total_min)
-        # raw
-        kw.update(color=raw_color, fontweight="semibold", horizontalalignment="center")
-        ax.text(xpos, data[0,j] + (yoffset_up if inv else yoffset_down), label_fmt(data[0,j], None), **kw)
-        # oos
-        kw.update(color=oos_color)
-        ax.text(xpos, data[1,j] + (yoffset_down if inv else yoffset_up), label_fmt(data[1,j], None), **kw)
+    # label_fmt = matplotlib.ticker.StrMethodFormatter('{x:.2f}')
+    # # up&down labels
+    # for j,xpos in enumerate(x):
+    #     inv = data[0,j] > data[1,j] # idx0 is greater
+    #     yoffset_up = 0.07 * (total_max - total_min)
+    #     yoffset_down = -0.08 * (total_max - total_min)
+    #     # raw
+    #     kw.update(color=raw_color, fontweight="semibold", horizontalalignment="center")
+    #     ax.text(xpos, data[0,j] + (yoffset_up if inv else yoffset_down), label_fmt(data[0,j], None), **kw)
+    #     # oos
+    #     kw.update(color=oos_color)
+    #     ax.text(xpos, data[1,j] + (yoffset_down if inv else yoffset_up), label_fmt(data[1,j], None), **kw)
 
     # delta value
     offset_x = 0
@@ -122,19 +123,19 @@ def diff_bar(data, col_labels, show_xlabel=True, show_legend=False, ax=None, cba
     
     fmt_delta = matplotlib.ticker.StrMethodFormatter('{x:.2f}')
 
-    # delta label
-    offset_x_2 = 0.12
-    for j,xpos in enumerate(x):
-        kw.update(color=delta_color, fontweight="heavy", horizontalalignment="left")
-        d = delta[j]
-        ax.text(xpos + offset_x + offset_x_2, middle[j] , f"{'-' if d < 0 else '+'}{fmt_delta(abs(d), None)}", **kw)
+    # # delta label
+    # offset_x_2 = 0.12
+    # for j,xpos in enumerate(x):
+    #     kw.update(color=delta_color, fontweight="heavy", horizontalalignment="left")
+    #     d = delta[j]
+    #     ax.text(xpos + offset_x + offset_x_2, middle[j] , f"{'-' if d < 0 else '+'}{fmt_delta(abs(d), None)}", **kw)
 
 
     if show_legend:
         ax.legend(loc='upper left', ncols=3)
 
     ax.set_xticks(np.arange(data.shape[1]), labels=col_labels if show_xlabel else [], minor=False)
-    ax.set_yticks(np.arange(data.shape[0]), minor=True)
+    # ax.set_yticks(np.arange(data.shape[0]), minor=True)
 
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
