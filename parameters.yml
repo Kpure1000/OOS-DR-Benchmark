@@ -42,3 +42,6 @@ metrics:
     seed: 1 
   tp:
     batch_size: 300
+dataset_metrics:
+  id:
+    ratio: 0.95

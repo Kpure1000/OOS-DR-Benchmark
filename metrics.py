@@ -2,8 +2,8 @@ from copy import deepcopy
 import numpy as np
 from sklearn.metrics import auc, pairwise_distances, roc_curve, silhouette_score, accuracy_score
 from sklearn.neighbors import KNeighborsClassifier, NearestNeighbors
+from sklearn.decomposition import PCA
 import scipy.stats, scipy.spatial
-import scipy.spatial.distance as dis
 import torch
 import yaml
 
@@ -20,6 +20,11 @@ class Parameters:
             return {}
         param = self.__params__[metric_name]
         return param
+
+class DatasetMetricParam(Parameters):
+    def __init__(self):
+        with open('parameters.yml', 'r') as f:
+            self.__params__ = yaml.load(f, Loader=yaml.FullLoader)['dataset_metrics']
 
 class Metrics:
     def __init__(self):
@@ -286,3 +291,54 @@ class Metrics:
             Nk += np.intersect1d(idx_high[i], idx_low[i]).shape[0]
 
         return Nk / N / (k)
+
+class DatasetMetrics:
+    
+    def __init__(self):
+        self.metrics = {
+            #abbr        name                     function    
+            'n':         ('Number of Samples',    self.n_samples        ),
+            'd':         ('Number of Dimensions', self.n_dims           ),
+            'id':        ('Intrinsic Dimensions', self.intrinsic_dims   ),
+            'sp':        ('Sparsity Ratio',       self.sparsity_ratio   ),
+            'cl':        ('Number of Classes',    self.n_classes        ),
+        }
+        self.params = DatasetMetricParam()
+
+    def update_dataset(self, X_train:np.ndarray, X_test:np.ndarray, y_train:np.ndarray, y_test:np.ndarray):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
+        self.X = np.concatenate((X_train, X_test), axis=0)
+        self.y = np.concatenate((y_train, y_test), axis=0) if y_train is not None and y_test is not None else None
+
+    def run_single(self, metric_name:str):
+        if metric_name not in self.metrics:
+            raise ValueError(f"Unknown Dataset Metric '{metric_name}'")
+        met = self.metrics[metric_name]
+        func = met[1]
+        kwargs = self.params.get(metric_name)
+        return (func(**kwargs), met[0])
+
+    def n_samples(self):
+        return self.X.shape[0]
+
+    def n_dims(self):
+        return self.X.shape[1]
+    
+    def intrinsic_dims_ratio(self, ratio=0.95):
+        return self.intrinsic_dims(ratio) / self.X.shape[1]
+
+    def intrinsic_dims(self, ratio=0.95):
+        pca = PCA()
+        pca.fit(self.X)
+        return np.where(pca.explained_variance_ratio_.cumsum() >= ratio)[0][0] + 1
+
+    def sparsity_ratio(self):
+        return 1.0 - (np.count_nonzero(self.X) / float(self.X.size))
+    
+    def n_classes(self):
+        return len(np.unique(self.y)) if self.y is not None else None
+    

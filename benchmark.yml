@@ -51,3 +51,9 @@ metrics:
   - dsc
   - acc_oos
   - acc_e
+dataset_metrics:
+  - n
+  - d
+  - id
+  - sp
+  - cl
