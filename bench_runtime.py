@@ -2,6 +2,7 @@ import argparse
 import os
 import traceback
 import h5py as hf
+import yaml
 from methods.methods import Methods
 from datetime import datetime
 import time
@@ -17,12 +18,10 @@ def load_runtime(dataset_name, n_stages:int):
         for i in range(n_stages):
             gE = f['E']
             gO = f['O']
-            datas.append({
-                'E':        np.array(gE[f'X{i}']),
-                'O':        np.array(gO[f'X{i}']),
-                'y_train':  np.array(gE[f'y{i}'] if f'y{i}' in gE else None),
-                'y_test':   np.array(gO[f'y{i}'] if f'y{i}' in gO else None),
-            })
+            datas.append((
+                np.array(gE[f'X{i}']),
+                np.array(gO[f'X{i}'])
+            ))
         return datas
 
 if __name__ == '__main__':
@@ -30,75 +29,52 @@ if __name__ == '__main__':
     create_time = datetime.now()
     bench_time = create_time.strftime("%Y.%m.%d-%H.%M.%S")
     
+    os.makedirs(f'results/runtime/', exist_ok=True)
     logger = getLogger(name='bench', path=f'results/runtime/{bench_time}', create_time=create_time)
     logger.propagate = False
 
-    os.makedirs(f'results/runtime/', exist_ok=True)
     os.makedirs(f'results/runtime/{bench_time}/', exist_ok=True)
     os.makedirs(f'results/runtime/{bench_time}/projections/', exist_ok=True)
+    logger.info(f'Benchmark folder created, "meta.json" and "projections/" will be saved in "results/runtime/{bench_time}"')
 
-    logger.info(f'bench_time: {bench_time}')
-
-    methods_name = [
-        'pca',
-        'ae',
-        'cdr',
-
-        'oos-mds',
-        'lmds',
-        'kmds',
-        'mimds',
-
-        'oos-isomap',
-        'lisomap',
-        'kisomap',
-
-        'ktsne',
-        'ptsne',
-        'ptsne22',
-        'dlmp-tsne',
-        
-        'pumap',
-        'dlmp-umap',
-    ]
-
-    n_methods = len(methods_name)
-    
-    methods = Methods()
-
-    # 要使用的数据集
-    datasets = [
-        ['cifar10', 3],       # 跑完啦
-
-        ['pancreas', 3],
-
-        ['freyFace', 3],    # 跑完啦
-    ]
-
-    meta = {
-        "methods": methods_name,
-        "datasets": datasets
-    }
+    with open('benchmark.yml', 'r', encoding='utf-8') as f:
+        bench_conf = yaml.load(f, Loader=yaml.FullLoader)
+        methods_name = bench_conf['methods']
+        datasets = bench_conf['datasets']['runtime']
+        logger.info(f'Load Config Success')
 
     with open(f'results/runtime/{bench_time}/meta.json', 'w') as f:
+        meta = {
+            "methods": methods_name,
+            "datasets": datasets
+        }
         f.write(json.dumps(meta, indent=4))
+        logger.info(f'Save Meta Data Success')
+
+    logger.info(f'Accessible Datasets: {list(map(lambda e:e[0], datasets))}')
+
+    methods = Methods(gpu_accel=False)
+    logger.info(f'Accessible Methods: {methods_name}')
 
     train_runtime_res = []
     test_runtime_res = []
 
+    logger.info(f"------- START BENCHMARK -------")
+
     for dataset in datasets:
-        [dataset_name, n_stages] = dataset
+        [dataset_name, n_stages, is_labeled] = dataset
 
         # get dataset
-        stage_data = load_runtime(dataset_name, n_stages)
+        try:
+            stage_data = load_runtime(dataset_name, n_stages)
+            logger.info(f">>>>>>>>>> Dataset '{dataset_name}' loaded, stage='{n_stages}'")
+        except Exception as e:
+            logger.error(f"Loading dataset '{dataset_name}' failed with:\n {traceback.format_exc()}, SKIP.")
+            continue
 
-        for oos_stage_idx, data in enumerate(stage_data):
-            E = data['E']
-            O = data['O']
-            y_train = data['y_train']
-            y_test = data['y_test']
+        for oos_stage_idx, (X_train, X_test) in enumerate(stage_data):
             
-            logger.info(f"***** Dataset '{dataset_name} [oos_stage={oos_stage_idx}]' start, train samples '{E.shape[0]}', test samples '{O.shape[0]}' *****")
+            logger.info(f">>>>> Dataset '{dataset_name} @ stage[{oos_stage_idx}/{n_stages}]' start, n_train='{X_train.shape[0]}', n_test='{X_test.shape[0]}'")
             
             for method_idx, method_name in enumerate(methods_name):
                 try:
@@ -112,34 +88,34 @@ if __name__ == '__main__':
                     
                     # train
                     start_time = time.perf_counter()
-                    method.fit(E)
+                    method.fit(X_train)
                     train_time =  time.perf_counter() - start_time
                     train_runtime_res.append({
                         'method': method_name,
                         'dataset': dataset_name,
-                        'n_samples': E.shape[0],
+                        'n_samples': X_train.shape[0],
                         'train_time': train_time,
                         'prop': oos_stage_idx,
                     })
                     
                     # train projection
-                    proj_train = method.transform(E)
+                    proj_train = method.transform(X_train)
                     
                     # test projection
                     start_time = time.perf_counter()
-                    proj_test = method.transform_oos(O)
+                    proj_test = method.transform_oos(X_test)
                     test_time = time.perf_counter() - start_time
                     test_runtime_res.append({
                         'method': method_name,
                         'dataset': dataset_name,
-                        'n_samples': O.shape[0],
+                        'n_samples': X_test.shape[0],
                         'test_time': test_time,
                         'prop': oos_stage_idx,
                     })
 
                     # save projection
-                    save_projection(proj_train_saved_path, proj=proj_train, label=y_train)
-                    save_projection(proj_test_saved_path, proj=proj_test, label=y_test)
+                    save_projection(proj_train_saved_path, proj=proj_train)
+                    save_projection(proj_test_saved_path, proj=proj_test)
                     logger.info(f"Projections saved successfully")
 
                     # report

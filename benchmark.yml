@@ -40,6 +40,22 @@ datasets:
     - [syn2, prop, 4, True]
     - [syn4, dist, 1, True]
     - [syn4, prop, 4, True]
+
+  runtime:
+    - [sensor,        5, True ]
+    - [letter,        5, True ]
+    - [bison,         5, False]
+    - [fashionMNIST,  5, True ]
+    - [merchant,      5, True ]
+    - [raid,          5, True ]
+    - [secom,         5, True ]
+    - [coil20,        5, False]
+    - [cnae9,         5, True ]
+    - [fmd,           5, True ]
+    - [isomapFace,    5, False]
+    - [dendritic,     5, True ]
+    - [headpose,      5, False]
+
 metrics:
   - t
   - c
