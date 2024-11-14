@@ -4,6 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
 import numpy as np
+from tqdm import tqdm
 from utils import load_projection, load_dataset, load_datasets
 import os
 import pandas as pd
@@ -115,14 +116,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # load data
+    data_type = args.type
     if args.type == 'truth':
-        truth_data = True
         result_path = f"results/truth/{args.input}"
     elif args.type == 'synth':
-        truth_data = False
         result_path = f"results/synth/{args.input}"
+    elif args.type == 'runtime':
+        result_path = f"results/runtime/{args.input}"
     else:
-        raise ValueError('type must be "truth" or "synth"')
+        raise ValueError('type must be "truth", "synth" or "runtime"')
 
     if not os.path.exists(result_path):
         raise OSError(f"Result path '{result_path}' does not exist")
@@ -132,11 +134,11 @@ if __name__ == '__main__':
     os.makedirs(f"imgs/{args.type}/", exist_ok=True)
 
     with open("plot.yml", 'r', encoding='utf-8') as f:
-        plot_config = yaml.load(f, Loader=yaml.FullLoader)["truth" if truth_data else "synth"]
+        plot_config = yaml.load(f, Loader=yaml.FullLoader)[data_type]
 
     with open('benchmark.yml', 'r', encoding='utf-8') as f:
         bench_conf = yaml.load(f, Loader=yaml.FullLoader)
-        datasets = bench_conf['datasets']["truth" if truth_data else "synth"]
+        datasets = bench_conf['datasets'][data_type]
         methods  = bench_conf['methods']
 
     # plot param
@@ -171,18 +173,20 @@ if __name__ == '__main__':
         proj_file_abs = os.path.abspath(filename)
         root, _ = os.path.splitext(os.path.basename(filename))
 
-        if truth_data:
+        if data_type == "truth" or data_type == "runtime":
             [dataset_name, method_name, stage_idx, batch_name] = root.split('_')
-        else:
+        elif data_type == "synth":
             [dataset_name, diff_name, method_name, stage_idx, batch_name] = root.split('_')
             dataset_name = dataset_name + '_' + diff_name
 
         projections[dataset_name][stage_idx][batch_name][method_name] = proj_file_abs
 
-    for dataset_name in projections:
+    for dataset_name in tqdm(projections):
         if dataset_name not in plot_config:
             continue
         for stage_idx in projections[dataset_name]:
+            
+            print(f"Generate plot for '{dataset_name}' Stage.{stage_idx}")
 
             label_name = plot_config[dataset_name]['label_name']
             cmap = plot_config[dataset_name]['cmap']
@@ -190,13 +194,17 @@ if __name__ == '__main__':
             alpha_test = plot_config[dataset_name]['alpha_test']
             size_train = plot_config[dataset_name]['size_train']
             size_test = plot_config[dataset_name]['size_test']
-            if truth_data:
+            if data_type == "truth":
                 n_samples = [item for item in datasets if item[0] == dataset_name][0][1]
                 with h5.File(f"datasets/truth/{dataset_name}_{n_samples}.h5") as f:
                     label_train = f["E"][f"{label_name}{stage_idx}"][:]
                     label_test  = f["O"][f"{label_name}{stage_idx}"][:]
-            else:
+            elif data_type == "synth":
                 with h5.File(f"datasets/synth/{dataset_name}.h5") as f:
+                    label_train = f["E"][f"{label_name}{stage_idx}"][:]
+                    label_test  = f["O"][f"{label_name}{stage_idx}"][:]
+            elif data_type == "runtime":
+                with h5.File(f"datasets/runtime/{dataset_name}.h5") as f:
                     label_train = f["E"][f"{label_name}{stage_idx}"][:]
                     label_test  = f["O"][f"{label_name}{stage_idx}"][:]
 
