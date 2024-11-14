@@ -45,9 +45,7 @@ def subplot_dist(data, methods, path):
     matplotlib.pyplot.close()
 
 
-def subplot_proportion(data, methods, path):
-
-    proportions = ["0.9", "0.7", "0.5", "0.3"]
+def subplot_proportion(data, methods, path, proportions = ["0.9", "0.7", "0.5", "0.3"]):
 
     # 定义颜色列表
     # colors = ['#ebf0f5', '#71aacc', '#597cab'] legacy
@@ -112,122 +110,176 @@ if __name__ == '__main__':
     ]
 
     manifolds = ['syn1', 'syn2', 'syn4']
+    datasets_name = [
+        'sensor',
+        'letter',
+        'bison',
+        'fashionMNIST',
+        'merchant',
+        'raid',
+        'secom',
+        'coil20',
+        'cnae9',
+        'fmd',
+        'isomapFace',
+        'dendritic',
+        'headpose',
+    ]
 
     save_time = datetime.now()
     save_time = save_time.strftime("%Y.%m.%d-%H.%M.%S")
-    os.makedirs(f'./imgs/subplots/{save_time}/structure', exist_ok=True)
-    os.makedirs(f'./imgs/subplots/{save_time}/prop', exist_ok=True)
-    os.makedirs(f'./imgs/subplots/{save_time}/dist', exist_ok=True)
 
-    res = pd.read_csv('./results/synth/newsynth/results.csv')
+    res = pd.read_csv('./results/runtime/runtime-all/results.csv')
 
-    # sturcture
-    structure_prop_idx = 1 # 比例差异为1作为结构差异
-    res_structure = res[res['diff'] == 'prop']
-    for metric_idx, (metric, large_is_best) in enumerate(metrics):
-        res_metric = res_structure[res_structure['metric'] == metric]
-        if (len(res_metric) == 0):
-            print(f"sturcture result for '{metric}' is not found")
-            continue
-        res_data = np.zeros((len(manifolds), len(methods)))
-        mask = np.zeros((len(manifolds), len(methods)), dtype=bool)
-        for method_idx, method in enumerate(methods):
-            res_method = res_metric[res_metric['method'] == method]
-            if (len(res_method) == 0):
-                print(f"sturcture result for '{method}'-'{metric}' is not found")
-                continue
-            for manifold_idx, manifold in enumerate(manifolds):
-                res_manifold = res_method[res_method['manifold'] == manifold]
-                if (len(res_manifold) == 0):
-                    print(f"sturcture result for '{method}'-'{metric}'-'{manifold}' is not found")
-                    continue
-                res_prop_struct = res_manifold[res_manifold['stage'] == structure_prop_idx]
-                if (len(res_prop_struct) == 0):
-                    print(f"prop result for '{method}'-'{metric}'-'{manifold}'-'{structure_prop_idx}' is not found")
-                    continue
-                res_data[manifold_idx, method_idx] = float(res_prop_struct['result'].iloc[0])
-                mask[manifold_idx, method_idx] = True
+    # # sturcture
+    # os.makedirs(f'./imgs/subplots/{save_time}/structure', exist_ok=True)
+    # structure_prop_idx = 1 # 比例差异为1作为结构差异
+    # res_structure = res[res['diff'] == 'prop']
+    # for metric_idx, (metric, large_is_best) in enumerate(metrics):
+    #     res_metric = res_structure[res_structure['metric'] == metric]
+    #     if (len(res_metric) == 0):
+    #         print(f"sturcture result for '{metric}' is not found")
+    #         continue
+    #     res_data = np.zeros((len(manifolds), len(methods)))
+    #     mask = np.zeros((len(manifolds), len(methods)), dtype=bool)
+    #     for method_idx, method in enumerate(methods):
+    #         res_method = res_metric[res_metric['method'] == method]
+    #         if (len(res_method) == 0):
+    #             print(f"sturcture result for '{method}'-'{metric}' is not found")
+    #             continue
+    #         for manifold_idx, manifold in enumerate(manifolds):
+    #             res_manifold = res_method[res_method['manifold'] == manifold]
+    #             if (len(res_manifold) == 0):
+    #                 print(f"sturcture result for '{method}'-'{metric}'-'{manifold}' is not found")
+    #                 continue
+    #             res_prop_struct = res_manifold[res_manifold['stage'] == structure_prop_idx]
+    #             if (len(res_prop_struct) == 0):
+    #                 print(f"prop result for '{method}'-'{metric}'-'{manifold}'-'{structure_prop_idx}' is not found")
+    #                 continue
+    #             res_data[manifold_idx, method_idx] = float(res_prop_struct['result'].iloc[0])
+    #             mask[manifold_idx, method_idx] = True
 
-            mask_data = np.ma.masked_where(mask == False, res_data)
+    #         mask_data = np.ma.masked_where(mask == False, res_data)
 
-            subplot_structure(data=mask_data, methods=methods, path=f'./imgs/subplots/{save_time}/structure/{metric_idx + 1}-{metric}.png', large_is_best=large_is_best)
+    #         subplot_structure(data=mask_data, methods=methods, path=f'./imgs/subplots/{save_time}/structure/{metric_idx + 1}-{metric}.png', large_is_best=large_is_best)
 
-    # dist
-    n_dist_stage = 2
-    res_dist = res.query(f"diff=='dist' or (diff=='prop' and stage==1)")
-    for metric_idx, (metric, large_is_best) in enumerate(metrics):
-        res_metric = res_dist[res_dist['metric'] == metric]
-        if (len(res_metric) == 0):
-            print(f"dist result for '{metric}' is not found")
-            continue
+    # # dist
+    # os.makedirs(f'./imgs/subplots/{save_time}/dist', exist_ok=True)
+    # n_dist_stage = 2
+    # res_dist = res.query(f"diff=='dist' or (diff=='prop' and stage==1)")
+    # for metric_idx, (metric, large_is_best) in enumerate(metrics):
+    #     res_metric = res_dist[res_dist['metric'] == metric]
+    #     if (len(res_metric) == 0):
+    #         print(f"dist result for '{metric}' is not found")
+    #         continue
 
-        for manifold_idx, manifold in enumerate(manifolds):
-            res_manifold = res_metric[res_metric['manifold'] == manifold]
-            if (len(res_manifold) == 0):
-                print(f"dist result for '{method}'-'{metric}'-'{manifold}' is not found")
-                continue
+    #     for manifold_idx, manifold in enumerate(manifolds):
+    #         res_manifold = res_metric[res_metric['manifold'] == manifold]
+    #         if (len(res_manifold) == 0):
+    #             print(f"dist result for '{method}'-'{metric}'-'{manifold}' is not found")
+    #             continue
 
-            res_data = np.zeros((n_dist_stage, len(methods)))
-            mask = np.zeros((n_dist_stage, len(methods)), dtype=bool)
+    #         res_data = np.zeros((n_dist_stage, len(methods)))
+    #         mask = np.zeros((n_dist_stage, len(methods)), dtype=bool)
 
-            for method_idx, method in enumerate(methods):
-                res_method = res_manifold[res_manifold['method'] == method]
-                if (len(res_method) == 0):
-                    print(f"dist result for '{method}'-'{metric}' is not found")
-                    continue
+    #         for method_idx, method in enumerate(methods):
+    #             res_method = res_manifold[res_manifold['method'] == method]
+    #             if (len(res_method) == 0):
+    #                 print(f"dist result for '{method}'-'{metric}' is not found")
+    #                 continue
 
-                dist_idx = 0
-                res_dist_stage = res_method.query(f"stage == {dist_idx} and diff == 'dist'")
-                if (len(res_dist_stage) == 0):
-                    print(f"dist result for '{method}'-'{metric}'-'{manifold}'-'{dist_idx}' is not found")
-                    continue
-                res_data[1, method_idx] = float(res_dist_stage['result'].iloc[0])
-                mask[1, method_idx] = True
-                
-                non_dist_idx = 1 # 比例差异等级为1作为无分布差异
-                res_non_dist_stage = res_method.query(f"stage == {non_dist_idx} and diff == 'prop'")
-                if (len(res_non_dist_stage) == 0):
-                    print(f"dist result for '{method}'-'{metric}'-'{manifold}'-'{non_dist_idx}' is not found")
-                    continue
-                res_data[0, method_idx] = float(res_non_dist_stage['result'].iloc[0])
-                mask[0, method_idx] = True
+    #             dist_idx = 0
+    #             res_dist_stage = res_method.query(f"stage == {dist_idx} and diff == 'dist'")
+    #             if (len(res_dist_stage) == 0):
+    #                 print(f"dist result for '{method}'-'{metric}'-'{manifold}'-'{dist_idx}' is not found")
+    #                 continue
+    #             res_data[1, method_idx] = float(res_dist_stage['result'].iloc[0])
+    #             mask[1, method_idx] = True
 
-            mask_data = np.ma.masked_where(mask == False, res_data)
+    #             non_dist_idx = 1 # 比例差异等级为1作为无分布差异
+    #             res_non_dist_stage = res_method.query(f"stage == {non_dist_idx} and diff == 'prop'")
+    #             if (len(res_non_dist_stage) == 0):
+    #                 print(f"dist result for '{method}'-'{metric}'-'{manifold}'-'{non_dist_idx}' is not found")
+    #                 continue
+    #             res_data[0, method_idx] = float(res_non_dist_stage['result'].iloc[0])
+    #             mask[0, method_idx] = True
 
-            subplot_dist(data=mask_data, methods=methods, path=f'./imgs/subplots/{save_time}/dist/{manifold}-{metric_idx + 1}-{metric}.png')
+    #         mask_data = np.ma.masked_where(mask == False, res_data)
 
-    # prop
-    n_prop_stage = 4
-    res_prop = res[res['diff'] == 'prop']
-    for metric_idx, (metric, large_is_best) in enumerate(metrics):
-        res_metric = res_prop[res_prop['metric'] == metric]
-        if (len(res_metric) == 0):
-            print(f"prop result for '{metric}' is not found")
-            continue
+    #         subplot_dist(data=mask_data, methods=methods, path=f'./imgs/subplots/{save_time}/dist/{manifold}-{metric_idx + 1}-{metric}.png')
 
-        for manifold_idx, manifold in enumerate(manifolds):
-            res_manifold = res_metric[res_metric['manifold'] == manifold]
-            if (len(res_manifold) == 0):
-                print(f"prop result for '{method}'-'{metric}'-'{manifold}' is not found")
-                continue
+    # # prop
+    # os.makedirs(f'./imgs/subplots/{save_time}/prop', exist_ok=True)
+    # n_prop_stage = 4
+    # res_prop = res[res['diff'] == 'prop']
+    # for metric_idx, (metric, large_is_best) in enumerate(metrics):
+    #     res_metric = res_prop[res_prop['metric'] == metric]
+    #     if (len(res_metric) == 0):
+    #         print(f"prop result for '{metric}' is not found")
+    #         continue
 
-            res_data = np.zeros((n_prop_stage, len(methods)))
-            mask = np.zeros((n_prop_stage, len(methods)), dtype=bool)
+    #     for manifold_idx, manifold in enumerate(manifolds):
+    #         res_manifold = res_metric[res_metric['manifold'] == manifold]
+    #         if (len(res_manifold) == 0):
+    #             print(f"prop result for '{method}'-'{metric}'-'{manifold}' is not found")
+    #             continue
 
-            for method_idx, method in enumerate(methods):
-                res_method = res_manifold[res_manifold['method'] == method]
-                if (len(res_method) == 0):
-                    print(f"prop result for '{method}'-'{metric}' is not found")
-                    continue
+    #         res_data = np.zeros((n_prop_stage, len(methods)))
+    #         mask = np.zeros((n_prop_stage, len(methods)), dtype=bool)
 
-                for prop_idx in range(n_prop_stage):
-                    res_prop_stage = res_method[res_method['stage'] == prop_idx]
-                    if (len(res_prop_stage) == 0):
-                        print(f"prop result for '{method}'-'{metric}'-'{manifold}'-'{prop_idx}' is not found")
-                        continue
-                    res_data[prop_idx, method_idx] = float(res_prop_stage['result'].iloc[0])
-                    mask[prop_idx, method_idx] = True
+    #         for method_idx, method in enumerate(methods):
+    #             res_method = res_manifold[res_manifold['method'] == method]
+    #             if (len(res_method) == 0):
+    #                 print(f"prop result for '{method}'-'{metric}' is not found")
+    #                 continue
 
-            mask_data = np.ma.masked_where(mask == False, res_data)
+    #             for prop_idx in range(n_prop_stage):
+    #                 res_prop_stage = res_method[res_method['stage'] == prop_idx]
+    #                 if (len(res_prop_stage) == 0):
+    #                     print(f"prop result for '{method}'-'{metric}'-'{manifold}'-'{prop_idx}' is not found")
+    #                     continue
+    #                 res_data[prop_idx, method_idx] = float(res_prop_stage['result'].iloc[0])
+    #                 mask[prop_idx, method_idx] = True
 
-            subplot_proportion(data=mask_data, methods=methods, path=f'./imgs/subplots/{save_time}/prop/{manifold}-{metric_idx + 1}-{metric}.png')
+    #         mask_data = np.ma.masked_where(mask == False, res_data)
+
+    #         subplot_proportion(data=mask_data, methods=methods, path=f'./imgs/subplots/{save_time}/prop/{manifold}-{metric_idx + 1}-{metric}.png')
+
+    # # runtime prop
+    # os.makedirs(f'./imgs/subplots/{save_time}/runtime-prop', exist_ok=True)
+    # n_prop_stage = 5
+    # res_prop = res
+    # for metric_idx, (metric, large_is_best) in enumerate(metrics):
+    #     res_metric = res_prop[res_prop['metric'] == metric]
+    #     if (len(res_metric) == 0):
+    #         print(f"prop result for '{metric}' is not found")
+    #         continue
+
+    #     for manifold_idx, dataset_name in enumerate(datasets_name):
+    #         res_manifold = res_metric[res_metric['dataset_name'] == dataset_name]
+    #         if (len(res_manifold) == 0):
+    #             print(f"prop result for '{method}'-'{metric}'-'{dataset_name}' is not found")
+    #             continue
+
+    #         res_data = np.zeros((n_prop_stage, len(methods)))
+    #         mask = np.zeros((n_prop_stage, len(methods)), dtype=bool)
+
+    #         for method_idx, method in enumerate(methods):
+    #             res_method = res_manifold[res_manifold['method'] == method]
+    #             if (len(res_method) == 0):
+    #                 print(f"prop result for '{method}'-'{metric}' is not found")
+    #                 continue
+
+    #             for prop_idx in range(n_prop_stage):
+    #                 res_prop_stage = res_method[res_method['stage'] == prop_idx]
+    #                 if (len(res_prop_stage) == 0):
+    #                     print(f"prop result for '{method}'-'{metric}'-'{dataset_name}'-'{prop_idx}' is not found")
+    #                     continue
+    #                 res_data[prop_idx, method_idx] = float(res_prop_stage['result'].iloc[0])
+    #                 mask[prop_idx, method_idx] = True
+
+    #         mask_data = np.ma.masked_where(mask == False, res_data)
+
+    #         subplot_proportion(data=mask_data, methods=methods, path=f'./imgs/subplots/{save_time}/runtime-prop/{dataset_name}-{metric_idx + 1}-{metric}.png', proportions = ["0.9", "0.7", "0.5", "0.3", "0.1"])
+
+    # subplot_proportion(data=np.zeros([5, 16]), methods=methods, path=f'./imgs/subplots/runtime-prop-tamplate.png', proportions = ["0.9", "0.7", "0.5", "0.3", "0.1"])
