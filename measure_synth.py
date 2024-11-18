@@ -26,7 +26,8 @@ def load_synth(dataset_name:str, diff:str, n_stages:int, is_Labeled:bool):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Benchmark command line arguments.')
-    parser.add_argument('-t', '--time', nargs=1, help='Specify bench time')
+    parser.add_argument('-t', '--time', nargs=1, help='Specify bench time (folder name)')
+    parser.add_argument('-i', '--ignore-meta', action='store_true', required=False, help="Using benckmark.yml instead of meta.json")
 
     args = parser.parse_args()
 
@@ -46,15 +47,19 @@ if __name__ == '__main__':
 
     logger.info(f'bench_fold: {bench_fold}')
 
-    with open(f'results/synth/{bench_fold}/meta.json', 'r') as f:
-        meta = json.loads(f.read())
-        datasets = meta['datasets']
-        methods_name = meta['methods']
-
     with open('benchmark.yml', 'r', encoding='utf-8') as f:
         bench_conf = yaml.load(f, Loader=yaml.FullLoader)
         metrics_name = bench_conf['metrics']
         logger.info(f'Load Config Success')
+
+    if args.ignore_meta:
+        datasets = bench_conf['datasets']['runtime']
+        methods_name = bench_conf['methods']
+    else:
+        with open(f'results/runtime/{bench_fold}/meta.json', 'r') as f:
+            meta = json.loads(f.read())
+            datasets = meta['datasets']
+            methods_name = meta['methods']
 
     metrics = Metrics()
 
