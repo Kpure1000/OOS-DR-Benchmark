@@ -26,11 +26,13 @@ from .kernel_base import KernelMDS, KernalIsomap, KernelTSNE
 
 from .ptsne09 import PTSNE09
 
+from .parametric_tsne.parametric_tSNE import Parametric_tSNE
+
 import numpy as np
 
 class Parameters:
-    def __init__(self):
-        with open('parameters.yml', 'r') as f:
+    def __init__(self, config_file: str='parameters.yml'):
+        with open(config_file, 'r') as f:
             self.__params__ = yaml.load(f, Loader=yaml.FullLoader)['methods']
 
     def available(self):
@@ -98,8 +100,13 @@ class _ptsne(MethodBase):
         X_train = self.std.fit_transform(X)
 
         # LEGACY
-        self.m = ParametricTSNE(input_dim=X_train.shape[1], output_dim=2, perp=self.perplexities, seed=42, use_cuda=True)
-        self.m.fit(training_data=torch.tensor(X_train, dtype=torch.float).cuda(), learning_rate=self.lr, epochs=self.epochs, verbose=self.verbose, batch_size=int(X.shape[0] / 10 if X.shape[0] > 256 else X.shape[0]))
+        # self.m = ParametricTSNE(input_dim=X_train.shape[1], output_dim=2, perp=self.perplexities, seed=42, use_cuda=True)
+        # self.m.fit(training_data=torch.tensor(X_train, dtype=torch.float).cuda(), learning_rate=self.lr, epochs=self.epochs, verbose=self.verbose, batch_size=int(X.shape[0] / 10 if X.shape[0] > 256 else X.shape[0]))
+
+        self.m = Parametric_tSNE(num_inputs=X_train.shape[1], num_outputs=2, perplexities=self.perplexities, 
+                                 do_pretrain=False,
+                                 seed=42, batch_size=int(X.shape[0] / 10 if X.shape[0] > 256 else X.shape[0]))
+        self.m.fit(X_train, epochs=self.epochs, verbose=self.verbose)
 
     def transform(self, X:np.ndarray):
         if self.m is None:
@@ -107,7 +114,9 @@ class _ptsne(MethodBase):
         X_test = self.std.transform(X)
 
         # LEGACY
-        return self.m(torch.tensor(X_test, dtype=torch.float).cuda()).cpu().detach().numpy()
+        # return self.m(torch.tensor(X_test, dtype=torch.float).cuda()).cpu().detach().numpy()
+
+        return self.m.transform(X_test)
     
     def transform_oos(self, X:np.ndarray):
         return self.transform(X)
@@ -349,8 +358,8 @@ class _mi_mds(_oos_base):
 
 class Methods:
 
-    def __init__(self, verbose: bool = False, gpu_accel=False):
-        self.__params__ = Parameters()
+    def __init__(self, verbose: bool = False, gpu_accel=False, params: Parameters = None):
+        self.__params__ = Parameters() if params is None else params
         self.verbose = verbose
         self.methods = {
             'pca': _pca(),

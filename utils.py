@@ -99,7 +99,8 @@ def plot_projection(projects: list,
                     test_alpha=0.5,
                     train_marker='o',
                     test_marker='o',
-                    train_labeled=False):
+                    train_labeled=False,
+                    **kwargs):
     import matplotlib.pyplot as plt
 
     ncols = min(4, len(projects))
@@ -123,13 +124,13 @@ def plot_projection(projects: list,
                      c=label_train if train_labeled else 'gray',
                      cmap=cmap_train if train_labeled else None,
                      marker=train_marker,
-                     s=train_size, alpha=train_alpha)
+                     s=train_size, alpha=train_alpha, **kwargs)
 
         axes.scatter(ptest[:,0], ptest[:,1],
                      c=label_test,
                      cmap=cmap_test,
                      marker=test_marker,
-                     s=test_size, alpha=test_alpha)
+                     s=test_size, alpha=test_alpha, **kwargs)
 
         axes.set_title(titles[i])
         axes.set_xticks([])

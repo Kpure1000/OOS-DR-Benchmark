@@ -32,6 +32,9 @@ datasets:
     - [headpose,      558,   1, False]
     - [coil20,        1440,  1, False]
     - [bison,         5000,  1, False]
+    - [digitsdg,      7200,  1, True ]
+    - [civil,         6717,  1, True ]
+    - [camelyon,      3875,  1, True ]
 
   synth:  # name, diff, n_stages, is_labeled
     - [syn1, dist, 1, True]
