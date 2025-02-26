@@ -12,30 +12,38 @@ class GeneratorBase:
 
     def sample(self, rd:np.random.RandomState, defined_values:list):
         raise NotImplementedError("Subclasses should implement this method.")
-    
+
 
     def _interp(self, cdf, rand_val, idx):
-        p1 = cdf[idx - 1] if idx > 0 else 0.0
-        p2 = cdf[idx] if idx < len(cdf) - 1 else 1.0
+
+        p1 = cdf[idx - 1]   if idx > 0              else 0.0
+        p2 = cdf[idx]       if idx < len(cdf) - 1   else 1.0
+
         r = (rand_val - p1) / (p2 - p1)
-        pls = 2.0 * np.sqrt(r * 0.5) if rand_val - p1 <= (p2 - p1)*0.5 else 2.0 * (1.0 - np.sqrt((1.0 - r) * 0.5))
-        if np.isnan(pls):
-            raise ValueError(f"Invalid interpolation parameters pls {pls}.")
+
+        if rand_val - p1 <= (p2 - p1) * 0.5:
+            pls = 2.0 * np.sqrt(r * 0.5)
+        else:
+            pls = 2.0 * (1.0 - np.sqrt((1.0 - r) * 0.5))
+
+        # if np.isnan(pls):
+        #     raise ValueError(f"Invalid interpolation parameters pls {pls}.")
+
         return idx + pls
-    
+
 
     def serialized(self):
         raise NotImplementedError("Subclasses should implement this method.")
-    
+
 
     def _sample_plane(self, rd:np.random.RandomState, eps=1e-8):
-        
+
         _max_retry_count = 5
         while True:
             # 由于idx1几乎不可能涉及pdf全0的行，这里基本上不会循环
 
             rand_val = rd.rand()
-            
+
             idx1 = np.searchsorted(self.cdf[:, -1], rand_val)
             idx1 = np.clip(idx1, 0, self.cdf.shape[1] - 1)
 
@@ -52,15 +60,15 @@ class GeneratorBase:
                 return None, None
 
         rand_val2 = rd.rand()
-        
+
         conditional_pdf = _pdf / _pdf_sum
         conditional_cdf = np.cumsum(conditional_pdf)
 
-        idx2 = np.searchsorted(conditional_cdf, rand_val2) 
-        
+        idx2 = np.searchsorted(conditional_cdf, rand_val2)
+
         idx1 = self._interp(self.cdf[:, -1], rand_val, idx1)
         idx2 = self._interp(conditional_cdf, rand_val2, idx2)
-    
+
         # return idx1, idx2
         return (idx1 / self.pdf.shape[0]) - 0.5 , (idx2 / self.pdf.shape[1]) - 0.5
 
@@ -68,24 +76,25 @@ class GeneratorBase:
 class OneDPDF(GeneratorBase):
 
     def __init__(self, pdf, dimensions, labeled=None):
-        
+
         super().__init__(dimensions, labeled)
-        
-        self.pdf = np.array(pdf) / np.sum(pdf) 
+
+        self.pdf = np.array(pdf) / np.sum(pdf)
         self.cdf = np.cumsum(self.pdf)
 
 
     def sample(self, rd:np.random.RandomState, defined_values=None):
-        
+
         rand_val = rd.rand()
-        
+
         idx = np.searchsorted(self.cdf, rand_val, side='left')
         idx = self._interp(self.cdf, rand_val, idx)
-        
+
         return tuple([(idx / len(self.pdf)) - 0.5])
 
 
     def serialized(self):
+
         return {
             'pdf': self.pdf.tolist(),
             'dimensions': self.dimensions,
@@ -99,8 +108,8 @@ class TwoDPDF(GeneratorBase):
     def __init__(self, pdf, dimensions, labeled=None):
 
         super().__init__(dimensions, labeled)
-        
-        self.pdf = np.array(pdf) / np.sum(pdf) 
+
+        self.pdf = np.array(pdf) / np.sum(pdf)
         self.cdf = np.cumsum(self.pdf).reshape(self.pdf.shape)
 
 
@@ -108,7 +117,7 @@ class TwoDPDF(GeneratorBase):
 
         org_idxed = int(defined_value * self.pdf.shape[defined_axes])
         idxed = np.clip(org_idxed,   0, self.pdf.shape[defined_axes] - 1)
-        
+
         _pdf = self.pdf[idxed, :] if defined_axes == 0 else self.pdf[:, idxed]
 
         norm_pdf = np.sum(_pdf)
@@ -119,12 +128,12 @@ class TwoDPDF(GeneratorBase):
             ret[defined_axes] = defined_value
             ret[1 - defined_axes] = None
             return tuple(ret)
-        
+
         rand_val = rd.rand()
-            
+
         conditional_pdf = _pdf / norm_pdf
         conditional_cdf = np.cumsum(conditional_pdf)
-        
+
         idx = np.searchsorted(conditional_cdf, rand_val)
         idx = self._interp(conditional_cdf, rand_val, idx)
 
@@ -140,21 +149,22 @@ class TwoDPDF(GeneratorBase):
         if defined_values[0] is None and defined_values[1] is None:
             # all undefined
             return self._sample_plane(rd)
-        
-        elif defined_values[0] is None: 
+
+        elif defined_values[0] is None:
             # axes 1 defined
             return self._sample_1(1, rd, defined_values[1])
-        
-        elif defined_values[1] is None: 
+
+        elif defined_values[1] is None:
             # axes 2 defined
             return self._sample_1(0, rd, defined_values[0])
-        
-        else: 
+
+        else:
             # all defined
             return defined_values[0], defined_values[1]
-        
+
 
     def serialized(self):
+
         return {
             'pdf': self.pdf.tolist(),
             'dimensions': self.dimensions,
@@ -166,6 +176,7 @@ class SampleManifold:
 
     @staticmethod
     def get_func(func_type:str):
+
         if func_type == 'swiss_roll':
             return SampleManifold._sample_swiss_roll
         elif func_type == 's_curve':
@@ -179,14 +190,14 @@ class SampleManifold:
 
     @staticmethod
     def _sample_swiss_roll(sample_t, sample_y):
-        
+
         u = 3
         t = np.pi * (0.0 + u * (sample_t + 0.5))
         max_t = np.pi * (1.0 + u * 1)
         y = sample_y
         x = t * np.cos(t) / max_t
         z = t * np.sin(t) / max_t
-        
+
         return x, y, z
 
 
@@ -207,24 +218,37 @@ class SampleManifold:
         t = 3.0 * np.pi * sample_t
         y = sample_y
         x = np.sin(t) * 0.5
-        z = np.sign(t) * (np.cos(t) - 1) * 0.5
-        
+        z = np.sign(t) * (np.cos(t) - 1) * 0.25
+
         return x,y,z
 
 
 class ThreeDPDF(GeneratorBase):
 
-    def __init__(self, pdf, dimensions, manifold:str, labeled=None, rotations:list=[0,0,0], rot_axis='xyz'):
-        
+    def __init__(self,
+                 pdf,
+                 dimensions,
+                 manifold: str,
+                 labeled=None,
+                 rotations: list = [0, 0, 0],
+                 scale: list = [1, 1, 1],
+                 translate: list = [0, 0, 0],
+                 rot_axis='xyz'):
+
         super().__init__(dimensions, labeled)
-        
-        self.pdf = np.array(pdf) / np.sum(pdf) 
+
+        self.pdf = np.array(pdf) / np.sum(pdf)
         self.cdf = np.cumsum(self.pdf).reshape(self.pdf.shape)
 
         self.rotations = rotations
+        self.scale = scale
+        self.translate = translate
+
         self.rot_axis = rot_axis
 
-        self.rotation = Rotation.from_euler(rot_axis, rotations, degrees=True)
+        self._rotation = Rotation.from_euler(rot_axis, rotations, degrees=True)
+        self._scale = np.diag(scale)
+        self._translate = np.array(translate)
 
         self.manifold = manifold
         self._manidold_func = SampleManifold.get_func(manifold)
@@ -235,7 +259,9 @@ class ThreeDPDF(GeneratorBase):
 
         point = self._manidold_func(idx1, idx2)
 
-        point = self.rotation.apply(list(point))
+        point = self._scale @ point
+        point = self._rotation.apply(list(point))
+        point = self._translate + point
 
         return tuple(point)
 
@@ -254,30 +280,45 @@ class ThreeDPDF(GeneratorBase):
             'manifold': self.manifold,
             'labeled': self.labeled,
             'rotations': self.rotations,
+            'scale': self.scale,
+            'translate': self.translate,
             'rot_axis': self.rot_axis
         }
 
 
 class PDP(ThreeDPDF):
-    def __init__(self, pdf, dimensions, labeled=None, rotations:list=[0,0,0], rot_axis='xyz'):
-        super().__init__(pdf, dimensions, 'none', labeled, rotations, rot_axis)
+
+    def __init__(self,
+                 pdf,
+                 dimensions,
+                 labeled=None,
+                 rotations: list = [0, 0, 0],
+                 scale: list = [1, 1, 1],
+                 translate: list = [0, 0, 0],
+                 rot_axis='xyz'):
+
+        super().__init__(pdf, dimensions, 'none', labeled, rotations, scale, translate, rot_axis)
 
 
     def _sample(self, rd:np.random.RandomState):
 
         idx1, idx2 = self._sample_plane(rd)
-        
-        point = self.rotation.apply([idx1, idx2, 0])
+
+        point = self._scale @ point
+        point = self._rotation.apply([idx1, idx2, 0])
+        point = self._translate + point
 
         return tuple(point)
 
-    
+
     def serialized(self):
         return {
             'pdf': self.pdf.tolist(),
             'dimensions': self.dimensions,
             'labeled': self.labeled,
             'rotations': self.rotations,
+            'scale': self.scale,
+            'translate': self.translate,
             'rot_axis': self.rot_axis
         }
 
@@ -285,13 +326,15 @@ class PDP(ThreeDPDF):
 class SynGenerator:
 
     def __init__(self, samples, dims, generators:list, weights:list):
-        
+
         self.samples = samples
         self.dims = dims
         self.generators = generators
         self.weights = weights
 
         self._check_generators()
+
+        self._fill_1dgenerator()
 
 
     def _check_generators(self):
@@ -302,68 +345,103 @@ class SynGenerator:
                 oneD_dim_set.add(gen.dimensions[0])
             for dim in gen.dimensions:
                 related_dim_set.add(dim)
-        
+
         total_dim = set(range(self.dims))
 
-        without_oneD = list(total_dim - oneD_dim_set)
-        if len(without_oneD) > 0:
-            print(f"Warning, dim {list(without_oneD)} is not related to any 1D generator, add uniform 1d generator")
-            for dim in without_oneD:
-                self.generators.append(OneDPDF(np.ones((11)), [dim], labeled=None))
-                self.weights.append(1)
+        # without_oneD = list(total_dim - oneD_dim_set)
+        # if len(without_oneD) > 0:
+        #     print(f"Warning, dim {list(without_oneD)} is not related to any 1D generator, add uniform 1d generator")
+        #     for dim in without_oneD:
+        #         self.generators.append(OneDPDF(np.ones((11)), [dim], labeled=None))
+        #         self.weights.append(1)
 
         undefined_dims = list(related_dim_set - total_dim)
         if len(undefined_dims) > 0:
             raise ValueError(f"Dim {undefined_dims} is undefined")
 
 
+    def _fill_1dgenerator(self):
+
+        self._generator_set = {}
+
+        for i, gen in enumerate(self.generators):
+            for dim in gen.dimensions:
+
+                if dim not in self._generator_set:
+                    self._generator_set[dim] = {
+                        'generators': [],
+                        'weights': []
+                    }
+
+                self._generator_set[dim]['generators'].append(gen)
+                self._generator_set[dim]['weights'].append(self.weights[i])
+
+        for dim in range(self.dims):
+            if dim not in self._generator_set:
+                self._generator_set[dim] = {
+                        'generators': [OneDPDF(np.ones((11)), [dim], labeled=None)],
+                        'weights': [1.0]
+                    }
+            # has_1d_pdf = False
+            # for gen in self._generator_set[dim]['generators']:
+            #     if isinstance(gen, OneDPDF):
+            #         has_1d_pdf = True
+            #         break
+            # if not has_1d_pdf:
+            #     self._generator_set[dim]['generators'].append(OneDPDF(np.ones((11)), [dim], labeled=None))
+            #     self._generator_set[dim]['weights'].append(1.0)
+
+
     def generate(self, seed=None):
-        
+
         rd = mtrand.RandomState(seed)
 
         dataset = np.zeros((self.samples, self.dims))
         labels = np.zeros(self.samples)
 
-        p_weights = np.array(self.weights) / np.sum(self.weights)
-
         for j in tqdm(range(self.samples)):
             sample = [None] * self.dims
-            label = 0  
+            label = None
             for i in range(self.dims):
-                while sample[i] is None:  
-                    
-                    generator = rd.choice(self.generators, p=p_weights)
+
+                while sample[i] is None:
+
+                    i_weights = self._generator_set[i]['weights']
+
+                    p_weights = np.array(i_weights, dtype=float) / np.sum(i_weights)
+
+                    generator = rd.choice(self._generator_set[i]['generators'], p=p_weights)
 
                     if i in generator.dimensions:
-                        
+
                         dims = generator.dimensions
                         values = [sample[dim] for dim in dims]
-                        
+
                         sampled_values = generator.sample(rd, values)
 
                         has_none = False
-                        
+
                         for dim, val in zip(dims, sampled_values):
-                            
+
                             sample[dim] = val
-                            
+
                             has_none = True if val is None else has_none
 
-                        if has_none is False and generator.labeled is not None:
-                            
+                        if has_none is False and generator.labeled is not None and label is None:
+
                             label = generator.labeled
 
-            dataset[j, :] = sample 
-            labels[j] = label 
-        
+            dataset[j, :] = sample
+            labels[j] = label if label is not None else 0
+
         return dataset, labels
-    
+
 
 class SynGeneratorParser:
 
     @staticmethod
     def load(filename):
-        
+
         with open(filename, 'r', encoding='utf-8') as f:
 
             s = f.read()
@@ -375,22 +453,21 @@ class SynGeneratorParser:
                 t = globals()[gen['type']](**gen['params'])
                 generators.append(t)
                 weights.append(gen['weight'])
-            
+
             return SynGenerator(config['samples'], config['dims'], generators, weights)
-    
+
 
     @staticmethod
     def save(filename, obj:SynGenerator):
-                
+
         config = {
             'samples': obj.samples,
             'dims': obj.dims,
             'generators': [
-                {'type':type(gen).__name__, 'weight':weight, 'params':gen.serialized()} 
+                {'type':type(gen).__name__, 'weight':weight, 'params':gen.serialized()}
                     for gen,weight in zip(obj.generators, obj.weights)]
         }
 
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(json.dumps(config, indent=4, ensure_ascii=False))
             f.flush()
-
