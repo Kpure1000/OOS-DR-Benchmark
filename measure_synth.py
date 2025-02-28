@@ -56,7 +56,7 @@ if __name__ == '__main__':
         datasets = bench_conf['datasets']['runtime']
         methods_name = bench_conf['methods']
     else:
-        with open(f'results/runtime/{bench_fold}/meta.json', 'r') as f:
+        with open(f'results/synth/{bench_fold}/meta.json', 'r') as f:
             meta = json.loads(f.read())
             datasets = meta['datasets']
             methods_name = meta['methods']

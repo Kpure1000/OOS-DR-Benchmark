@@ -3,6 +3,7 @@ import json
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
+from matplotlib.pyplot import Normalize
 import numpy as np
 from tqdm import tqdm
 from utils import load_projection, load_dataset, load_datasets
@@ -25,16 +26,20 @@ def subplot_projection(ax: Axes,
                        size_test,
                        cmap,
                        show_label=False,
-                       show_train=True):
+                       show_train=True,
+                       colornorm=None,
+                       **other):
 
     proj_train = load_projection(train_set_path)
 
+    norm = None if colornorm is None else Normalize(vmin=colornorm[0], vmax=colornorm[1])
+
     if show_train:
-        ax.scatter(proj_train[:,0], proj_train[:,1], c=label_train, cmap=cmap if show_label else'gray', s=size_train, marker='o', alpha=alpha_train)
+        ax.scatter(proj_train[:,0], proj_train[:,1], norm=norm, c=label_train, cmap=cmap if show_label else'gray', s=size_train, marker='o', alpha=alpha_train)
 
     proj_test = load_projection(test_set_path)
 
-    ax.scatter(proj_test[:,0], proj_test[:,1], c=label_test, cmap=cmap, s=size_test, marker='o', alpha=alpha_test)
+    ax.scatter(proj_test[:,0], proj_test[:,1], norm=norm, c=label_test, cmap=cmap, s=size_test, marker='o', alpha=alpha_test)
 
     ax.set_xticks([])
     ax.set_yticks([])
@@ -58,11 +63,7 @@ def plot_projection(save_params,
                     title,
                     show_label,
                     show_train,
-                    alpha_train,
-                    alpha_test,
-                    size_train,
-                    size_test,
-                    cmap):
+                    **plot_args):
 
     fig = plt.figure(figsize=(n_cols * 4, n_rows * 4))
 
@@ -92,11 +93,7 @@ def plot_projection(save_params,
                            label_test=label_test,
                            show_label=show_label,
                            show_train=show_train,
-                           alpha_train=alpha_train,
-                           alpha_test=alpha_test,
-                           size_train=size_train,
-                           size_test=size_test,
-                           cmap=cmap)
+                           **plot_args)
 
     [fig.savefig(param[0], **param[1],) for param in save_params]
 
@@ -188,12 +185,9 @@ if __name__ == '__main__':
             
             print(f"Generate plot for '{dataset_name}' Stage.{stage_idx}")
 
-            label_name = plot_config[dataset_name]['label_name']
-            cmap = plot_config[dataset_name]['cmap']
-            alpha_train = plot_config[dataset_name]['alpha_train']
-            alpha_test = plot_config[dataset_name]['alpha_test']
-            size_train = plot_config[dataset_name]['size_train']
-            size_test = plot_config[dataset_name]['size_test']
+            plot_args = plot_config[dataset_name]
+            label_name = plot_args['label_name']
+
             if data_type == "truth":
                 n_samples = [item for item in datasets if item[0] == dataset_name][0][1]
                 with h5.File(f"datasets/truth/{dataset_name}_{n_samples}.h5") as f:
@@ -221,8 +215,4 @@ if __name__ == '__main__':
                             n_cols=n_cols,
                             show_label=show_label,
                             show_train=show_train,
-                            alpha_train = alpha_train,
-                            alpha_test = alpha_test,
-                            size_train = size_train,
-                            size_test = size_test,
-                            cmap=cmap)
+                            **plot_args)

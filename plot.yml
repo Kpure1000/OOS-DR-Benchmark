@@ -6,6 +6,7 @@ truth:
     alpha_test: 0.7
     size_train: 3.0
     size_test:  1.5
+    colornorm: [0,20]
 
   fashionMNIST: 
     label_name: y
@@ -14,6 +15,7 @@ truth:
     alpha_test: 0.7
     size_train: 3.0
     size_test:  1.5
+    colornorm: [0,10]
 
   fmd:          
     label_name: y
@@ -22,6 +24,7 @@ truth:
     alpha_test: 0.7
     size_train: 6.0
     size_test:  4.5
+    colornorm: [0,10]
 
   secom:        
     label_name: y
@@ -30,6 +33,7 @@ truth:
     alpha_test: 0.65
     size_train: 4.0
     size_test:  2.0
+    colornorm: [0,10]
 
   cnae9:        
     label_name: y
@@ -38,6 +42,7 @@ truth:
     alpha_test: 0.7
     size_train: 10.0
     size_test:  7.0
+    colornorm: [0,10]
 
   spambase:     
     label_name: y
@@ -46,6 +51,7 @@ truth:
     alpha_test: 0.7
     size_train: 3.0
     size_test:  1.5
+    colornorm: [0,10]
 
   hatespeech:   
     label_name: y
@@ -54,6 +60,7 @@ truth:
     alpha_test: 0.7
     size_train: 3.0
     size_test:  1.5
+    colornorm: [0,10]
 
   raid:         
     label_name: y
@@ -62,6 +69,7 @@ truth:
     alpha_test: 0.7
     size_train: 5.0
     size_test:  3.0
+    colornorm: [0,10]
 
   sensor:       
     label_name: y
@@ -70,6 +78,7 @@ truth:
     alpha_test: 0.5
     size_train: 2.0
     size_test:  2.0
+    colornorm: [0,10]
 
   dendritic:    
     label_name: y
@@ -78,6 +87,7 @@ truth:
     alpha_test: 0.7
     size_train: 8
     size_test:  5
+    colornorm: [0,10]
 
   merchant:     
     label_name: y
@@ -86,6 +96,7 @@ truth:
     alpha_test: 0.7
     size_train: 1.0
     size_test:  2.0
+    colornorm: [0,10]
 
   isomapFace:   
     label_name: posex
@@ -127,6 +138,7 @@ synth:
     alpha_test: 0.7
     size_train: 2.5
     size_test:  2.0
+    colornorm: [0,10]
 
   syn1_prop: 
     label_name: y
@@ -135,6 +147,7 @@ synth:
     alpha_test: 0.7
     size_train: 2.5
     size_test:  4.0
+    colornorm: [0,10]
 
   syn2_dist: 
     label_name: y
@@ -143,6 +156,7 @@ synth:
     alpha_test: 0.7
     size_train: 2.5
     size_test:  2.0
+    colornorm: [0,10]
 
   syn2_prop: 
     label_name: y
@@ -151,6 +165,7 @@ synth:
     alpha_test: 0.7
     size_train: 2.5
     size_test:  4.0
+    colornorm: [0,10]
 
   syn4_dist: 
     label_name: y
@@ -159,6 +174,7 @@ synth:
     alpha_test: 0.7
     size_train: 2.5
     size_test:  2.0
+    colornorm: [0,10]
 
   syn4_prop: 
     label_name: y
@@ -167,6 +183,7 @@ synth:
     alpha_test: 0.7
     size_train: 2.5
     size_test:  4.0
+    colornorm: [0,10]
 
 runtime:
   letter:       
@@ -176,6 +193,7 @@ runtime:
     alpha_test: 0.7
     size_train: 3.0
     size_test:  1.5
+    colornorm: [0,20]
 
   fashionMNIST: 
     label_name: y
@@ -184,6 +202,7 @@ runtime:
     alpha_test: 0.7
     size_train: 3.0
     size_test:  1.5
+    colornorm: [0,10]
 
   fmd:          
     label_name: y
@@ -192,6 +211,7 @@ runtime:
     alpha_test: 0.7
     size_train: 6.0
     size_test:  4.5
+    colornorm: [0,10]
 
   secom:        
     label_name: y
@@ -200,6 +220,7 @@ runtime:
     alpha_test: 0.65
     size_train: 4.0
     size_test:  2.0
+    colornorm: [0,10]
 
   cnae9:        
     label_name: y
@@ -208,6 +229,7 @@ runtime:
     alpha_test: 0.7
     size_train: 10.0
     size_test:  7.0
+    colornorm: [0,10]
 
   raid:         
     label_name: y
@@ -216,6 +238,7 @@ runtime:
     alpha_test: 0.7
     size_train: 5.0
     size_test:  3.0
+    colornorm: [0,10]
 
   sensor:       
     label_name: y
@@ -224,6 +247,7 @@ runtime:
     alpha_test: 0.5
     size_train: 2.0
     size_test:  2.0
+    colornorm: [0,10]
 
   dendritic:    
     label_name: y
@@ -232,6 +256,7 @@ runtime:
     alpha_test: 0.7
     size_train: 8
     size_test:  5
+    colornorm: [0,10]
 
   merchant:     
     label_name: y
@@ -240,6 +265,7 @@ runtime:
     alpha_test: 0.7
     size_train: 1.0
     size_test:  2.0
+    colornorm: [0,10]
 
   isomapFace:   
     label_name: posex
