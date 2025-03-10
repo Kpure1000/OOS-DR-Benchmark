@@ -180,6 +180,7 @@ if __name__ == '__main__':
 
     for dataset_name in tqdm(projections):
         if dataset_name not in plot_config:
+            print(f"Dataset '{dataset_name}' not in plot config, see 'plot.yml' for more")
             continue
         for stage_idx in projections[dataset_name]:
             

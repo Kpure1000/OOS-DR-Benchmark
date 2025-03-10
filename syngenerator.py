@@ -257,7 +257,7 @@ class ThreeDPDF(GeneratorBase):
     def _sample(self, rd:np.random.RandomState):
         idx1, idx2 = self._sample_plane(rd)
 
-        point = self._manidold_func(idx1, idx2)
+        point = np.array(self._manidold_func(idx1, idx2))
 
         point = self._scale @ point
         point = self._rotation.apply(list(point))
@@ -304,6 +304,7 @@ class PDP(ThreeDPDF):
 
         idx1, idx2 = self._sample_plane(rd)
 
+        point = np.array([idx1, idx2, 0])
         point = self._scale @ point
         point = self._rotation.apply([idx1, idx2, 0])
         point = self._translate + point

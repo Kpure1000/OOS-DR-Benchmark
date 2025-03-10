@@ -130,6 +130,33 @@ truth:
     size_train: 4.0
     size_test:  2.5
 
+  digitsdg:        
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.08
+    alpha_test: 0.7
+    size_train: 1.0
+    size_test:  2.0
+    colornorm: [0,10]
+
+  civil:        
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.08
+    alpha_test: 0.7
+    size_train: 1.0
+    size_test:  2.0
+    colornorm: [0,10]
+
+  camelyon:        
+    label_name: y
+    cmap: tab10
+    alpha_train: 0.08
+    alpha_test: 0.7
+    size_train: 1.0
+    size_test:  2.0
+    colornorm: [0,10]
+
 synth:
   syn1_dist: 
     label_name: y
